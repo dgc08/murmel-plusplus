@@ -1,0 +1,6 @@
+inc s0
+; hello
+test1: ; yess
+    inc r0
+    dec r1
+    jmp test1
