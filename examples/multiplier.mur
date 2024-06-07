@@ -1,0 +1,35 @@
+;; Efficient multiplier
+;; Longer than the one you'd usually write, but ~2x faster
+;; It just runs one extra iteration while moving 32 back to r1
+tst 0
+--jmp 4
+hlt
+
+; Decrement the multiplier, done once per iteration
+dec 0
+
+; Decrement the multiplicand until it's 0  and
+;  add its content onto registers 2 and 3
+tst 1
+--jmp 8
+jmp 12
+dec 1
+inc 2
+inc 3
+jmp 5
+
+; Same as above, but with r2 and r1 switched, the multiplier lies in r2 here
+tst 0
+--jmp 15
+hlt
+dec 0
+
+tst 2
+--jmp 19
+; r2 is empty, next iteration in which
+; where the multiplier is stored in r1
+jmp 1
+dec 2
+inc 1
+inc 3
+jmp 16

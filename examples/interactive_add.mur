@@ -1,0 +1,35 @@
+;;; MURMEL++ OUTPUT;;;
+ ;; instr_offset 1, register_offset = 0, r0 = 16, s0 = 8
+tst 2
+jmp 4
+jmp 1
+tst 2
+jmp 7
+jmp 9
+dec 2
+jmp 4
+inc 4
+tst 3
+jmp 13
+jmp 15
+dec 3
+jmp 10
+tst 0
+jmp 18
+jmp 21
+dec 0
+inc 1
+jmp 15
+tst 3
+jmp 24
+jmp 26
+dec 3
+jmp 21
+tst 1
+jmp 29
+jmp 32
+dec 1
+inc 3
+jmp 26
+dec 4
+jmp 1

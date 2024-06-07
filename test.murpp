@@ -1,12 +1,27 @@
-;; AUTHOR Sinthoras39
-;; Interactive addition
-;; HOW TO USE
-;; 1. Start the program. It'll stay in an infinite loop until you enter something
-;; 2. io0 (which is the first register) & io1 take the input
-;; 3. If you are done, set io2 to 1. This will start the calculation and put io4 as a kind of "status LED" to 1
-;; 4. Wait until io4 is 0 again. You will find the output in io3. You can continue to use the program without restarting
-
+; this label isn't needed but good practice
 start:
-    mov e0 #6
-    mov e1 #8
-    sub e0 e1
+    movz io0
+    case io1 $case0,$case1,$case2 $default
+    jmp end
+case0:
+    inc io0
+    jmp end
+case1:
+    inc io0
+    inc io0
+    jmp end
+case2:
+    inc io0
+    inc io0
+    inc io0
+    jmp end
+default:
+    inc io0
+    inc io0
+    inc io0
+    inc io0
+    inc io0
+    jmp end
+
+end:
+    hlt

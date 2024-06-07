@@ -25,7 +25,7 @@ if __name__ == '__main__':
     # Stage 0: Parse, remove comments
     code = []
     for line in lines:
-        code.append(re.findall(r"\S+",  line.split(";")[0].strip()))
+        code.append(line.split(";")[0].strip().replace("jz", "jiz").replace("jnz", "jinz").split())
 
     if args.verbose:
         print ("Read code", code, "\n\n")
@@ -124,6 +124,28 @@ if __name__ == '__main__':
                 exit(1)
 
         ###
+        elif code[i][0].lower() == "sub" and code[i][2][0] != "#":
+            max_label = 3
+            asm = """\
+movz s5
+{label0}:
+jiz {op1} {label2}
+jiz {op0} {label1}
+dec {op0}
+dec {op1}
+jmp {label0}
+{label1}:
+inc s5
+{label2}:
+jiz {op1} {label3}
+inc {op0}
+dec {op1}
+jmp {label2}
+{label3}:
+"""
+            form = {"op0": code[i][1], "op1":code[i][2]}
+
+        ###
         elif code[i][0].lower() == "cpy" and code[i][2][0] != "#":
             max_label = -1
             asm = """\
@@ -191,26 +213,22 @@ movz {op1}
             form = {"op0": code[i][1], "op1":code[i][2]}
 
         ###
-        elif code[i][0].lower() == "sub" and code[i][2][0] != "#":
-            max_label = 3
-            asm = """\
-movz s5
-{label0}:
-jiz {op1} {label2}
-jiz {op0} {label1}
-dec {op0}
-dec {op1}
-jmp {label0}
-{label1}:
-inc s5
-{label2}:
-jiz {op1} {label3}
-inc {op0}
-dec {op1}
-jmp {label2}
-{label3}:
-"""
-            form = {"op0": code[i][1], "op1":code[i][2]}
+        elif code[i][0].lower() == "case" and code[i][2][0] != "#":
+            max_label = -1
+            asm = ""
+            form = {"r": code[i][1]}
+
+            found = False
+            for lbl in code[i][2].split(","):
+                found = True
+                asm += """
+jiz {r} lbl
+dec {r}
+""".replace("lbl", lbl)
+
+            if len(code[i]) > 3:
+                asm += "inc {r}\n" + f"jmp {code[i][3]}\n"
+
         ####
         else:
             i += 1
@@ -257,7 +275,7 @@ jmp {label2}
 
 
     while i < len(code):
-        if code[i] == [] or code[i][0].endswith(":"):
+        if code[i] == [] or code[i][0].endswith(":") or "$" in " ".join(code[i]):
             pass
         elif len(code[i]) == 2:
             #print("before", code[i][1], end=" ")
@@ -301,7 +319,7 @@ jmp {label2}
                 pass
             else:
                 try:
-                    code[i][1] = str(labels[code[i][1]])
+                    code[i][1] = str(labels[code[i][1].replace("$", "")])
                 except KeyError:
                     print("Unrecognized label", code[i][1])
                     exit(1)
