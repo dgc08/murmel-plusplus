@@ -1,4 +1,0 @@
-inc 8
-inc 16
-dec 17
-jmp 2

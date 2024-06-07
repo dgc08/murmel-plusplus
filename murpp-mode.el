@@ -20,11 +20,13 @@
 (defconst murpp-font-lock-keywords
   (list
    ;; Keywords
-   '("\\<\\(inc\\|dec\\|jmp\\|tst||\\hlt\\|movf\\|cpyf\\|jizf\\)\\>" . font-lock-keyword-face)
+   '("\\<\\(inc\\|dec\\|jmp\\|tst\\||hlt\\|mov\\|cpy\\|jiz\\|jinz\\|add\\|cpy\\|movz\\)\\>" . font-lock-keyword-face)
    ;; Registers
    '("\\<\\(s[0-9]+\\|r[0-9]+\\|io[0-9]+\\|e[0-9]+\\|)\\>" . font-lock-variable-name-face)
    ;; Labels
-   '("^\\([a-zA-Z0-9_]+\\):" . font-lock-function-name-face))
+   '("^\\([a-zA-Z0-9_]+\\):" . font-lock-function-name-face)
+   ;; Immediates
+   '("#[0-9]+" . font-lock-constant-face))
   "Basic syntax highlighting for `murpp-mode'.")
 
 (defun murpp-mode ()
@@ -41,7 +43,6 @@
 
 ;; Associate .murpp files with murpp-mode
 (add-to-list 'auto-mode-alist '("\\.murpp\\'" . murpp-mode))
+(add-to-list 'auto-mode-alist '("\\.mur\\'" . murpp-mode))
 
 (provide 'murpp-mode)
-
-;;; murpp-mode.el ends here

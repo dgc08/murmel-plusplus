@@ -19,6 +19,8 @@ link labels
 ## instr
 labels: you can only jump to labels
 
+movzf: zeros a register
+
 jizF condition(register) address: jump if address is zero
 ```
     tst {condition}
@@ -30,7 +32,7 @@ label:
 movF *destination value(register|immediate):    add value to other register (value register will be empty afterwards)
 if register
 ```
-label 1:
+label1:
     tst {value}
     jmp label2
     jmp label3
@@ -43,6 +45,6 @@ label3:
 
 cpyF *destination value(register):              fucntion: copy value to other register (2x time of movF)
 ```
-    movF l0,{destination} {value}
-    movF {value} l0
+    movF s0,{destination} {value}
+    movF {value} s0
 ```
