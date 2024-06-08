@@ -1,16 +1,23 @@
 import argparse
 import re
 
+from sys import argv
+
 parser = argparse.ArgumentParser(description='Compiler for murmel++ assembly')
 
 parser.add_argument("input", type=str)
 parser.add_argument("-o", "--output", type=str, default="out.mur")
 parser.add_argument("-a", "--jump_address", type=int, default=1, help="Address of the first instruction. Default: 1")
+parser.add_argument("-r", "--register_address", type=int, default=0, help="Address of the first register. Default: 0")
+
 parser.add_argument("-v", "--verbose", action="store_true")
+
+parser.add_argument("-s", "--stack", action="store_true", help="Activate stack operations like push & pop (requires pointers to be working)")
+parser.add_argument("-f", "--func", action="store_true", help="Activate the base miv instruction and with it call & ret")
 
 args = parser.parse_args()
 
-global_offset = 0
+global_offset = args.register_address
 
 s_offset = 8
 r_offset = 16
@@ -33,7 +40,7 @@ if __name__ == '__main__':
     i = 0
     builtin_labels = 0
     while i < len(code):
-        if len(code[i]) < 2:
+        if code[i] == []:
             i += 1
             continue
 
@@ -145,6 +152,70 @@ jmp {label2}
 """
             form = {"op0": code[i][1], "op1":code[i][2]}
 
+
+        ###
+        elif code[i][0].lower() == "mul" and code[i][2][0] != "#":
+            max_label = 4
+            asm = """\
+movz s0
+movz s4
+{label0}:
+jiz {op0} {label4}
+dec {op0}
+{label1}:
+jiz {op1} {label2}
+dec {op1}
+inc s0
+inc s4
+jmp {label1}
+{label2}:
+jiz {op0} {label4}
+dec {op0}
+{label3}:
+jiz s0 {label0}
+dec s0
+inc {op1}
+inc s4
+jmp {label3}
+{label4}:
+movz {op1}
+"""
+            form = {"op0": code[i][1], "op1":code[i][2]}
+
+
+        ###
+        elif code[i][0].lower() == "div" and code[i][2][0] != "#":
+            max_label = 5
+            asm = """\
+jiz {op1} {label5}
+movz s3
+{label0}:
+cpy s1 {op0}
+cpy s2 {op1}
+cmp s1 s2
+case s4 {label2},{label1},{label3}
+{label1}:
+inc s3
+cpy s2 {op1}
+sub {op0} s2
+jmp {label0}
+{label2}:
+inc s3
+mov s4 s3
+movz {op0}
+movz {op1}
+jmp {label4}
+{label5}:
+mov io6 #3
+hlt
+{label3}:
+mov s5 {op0}
+mov s4 s3
+movz {op1}
+{label4}:
+"""
+            form = {"op0": code[i][1], "op1":code[i][2]}
+
         ###
         elif code[i][0].lower() == "cpy" and code[i][2][0] != "#":
             max_label = -1
@@ -213,6 +284,14 @@ movz {op1}
             form = {"op0": code[i][1], "op1":code[i][2]}
 
         ###
+        elif code[i][0].lower() == "int":
+            if code[i] == ["int"]:
+                code[i] = ["int", "1"]
+            max_label = 0
+            form = {"code":code[i][1]}
+            asm = "mov io6 #{code}\n{label0}:\njinz io6 {label0}\n"
+
+        ###
         elif code[i][0].lower() == "case" and code[i][2][0] != "#":
             max_label = -1
             asm = ""
@@ -237,12 +316,18 @@ dec {r}
         try:
             form
         except NameError:
+            print("a")
             i += 1
+            continue
 
         for j in range(max_label+1):
-                form["label"+str(j)] = "0L"+str(j+builtin_labels)
+            form["label"+str(j)] = "0L"+str(j+builtin_labels)
 
-        instr = asm.format(**form).split("\n")
+        try:
+            instr = asm.format(**form).split("\n")
+        except ValueError as e:
+            print("Value Error:", e, "at", code[i], asm)
+            exit(1)
         code_repl = []
         for j in instr:
             code_repl.append(j.split())
@@ -281,9 +366,9 @@ dec {r}
             #print("before", code[i][1], end=" ")
             code[i][1] = repl_registers(code[i][1])
             #print("after", code[i][1])
-        elif len(code[i]) == 3:
-            code[i][1] = repl_registers(code[i][1])
-            code[i][2] = repl_registers(code[i][2])
+        # elif len(code[i]) == 3:
+        #     code[i][1] = repl_registers(code[i][1])
+        #     code[i][2] = repl_registers(code[i][2])
         elif code[i][0] == "hlt":
             pass
         else:
@@ -339,5 +424,6 @@ dec {r}
             code[i] = " ".join(code[i])
             i += 1
 
-        info = f";;; MURMEL++ OUTPUT ;;;\n;; instr_offset {args.jump_address}, register_offset {global_offset}\n;; r0 = {r_offset}, s0 = {s_offset}"
+        com = args.input
+        info = f";;; MURMEL++ OUTPUT ({com}) ;;;\n;; instr_offset {args.jump_address}, register_offset {global_offset}\n;; r0 = {r_offset}, s0 = {s_offset}"
         f.write(info + "\n" + "\n".join(code))

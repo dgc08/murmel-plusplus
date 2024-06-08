@@ -1,27 +1,3 @@
-; this label isn't needed but good practice
-start:
-    movz io0
-    case io1 $case0,$case1,$case2 $default
-    jmp end
-case0:
-    inc io0
-    jmp end
-case1:
-    inc io0
-    inc io0
-    jmp end
-case2:
-    inc io0
-    inc io0
-    inc io0
-    jmp end
-default:
-    inc io0
-    inc io0
-    inc io0
-    inc io0
-    inc io0
-    jmp end
-
-end:
-    hlt
+div e0 e1
+mov e2 s4
+mov e3 s5
