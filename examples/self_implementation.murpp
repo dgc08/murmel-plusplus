@@ -1,0 +1,67 @@
+;; Lets try this
+
+;; AUTHOR: Sinthoras39
+;; This assumes you have pointers available on your Bonsai/Murmel Emulation
+;; I assume that pointers are dereferenced with *
+
+;; e0 is ip
+;; e1 & e2 is temp storage
+;; user program starts at e2, program and the registers/the stack lie in the same memory.
+;; Make sure to account for the space for e0, e1 and e2 while setting offsets in mem
+
+;; Instruction format: first register is opcode, next register is argument. `hlt` takes 0 as argument
+
+;; Opcodes:
+;; 0: inc
+;; 1: dec
+;; 2: jmp
+;; 3: tst
+;; 4: hlt
+
+;; How to compile stuff for this
+
+;; Command flags:
+;; -a 5 --instr_size 2 -r 3
+;; a is number of the highest register + 4
+;; (if you for example use registers up to e2 you should use -a 6)
+
+;; run murpp on the output file with --assemble. It will produce a *bin file.
+;; You need to add how many new lines with 0 in it as the number you used for the -a flag.
+;; That will be the data / array register, every line represents an array.
+
+exec:
+    mov e2 *e0
+    mov *e0,e1 e2
+    inc e0
+    case e1 inc,dec,jmp,tst,hlt default
+
+    inc:
+        inc **e0
+        jmp end
+    dec:
+        dec **e0
+        jmp end
+    jmp:
+        mov e2 *e0
+        mov e1,*e0 e2
+        mov e0 e1
+        jmp exec
+    tst:
+        jz **e0 skip
+        jmp end
+        skip:
+            inc e0
+            inc e0
+            inc e0
+            jmp exec
+    hlt:
+        mov e0 #3
+        hlt
+
+    end:
+        inc e0
+        jmp exec
+
+default:
+    mov e2 #2
+    hlt

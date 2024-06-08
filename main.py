@@ -8,9 +8,11 @@ parser = argparse.ArgumentParser(description='Compiler for murmel++ assembly')
 parser.add_argument("input", type=str)
 parser.add_argument("-o", "--output", type=str, default="out.mur")
 parser.add_argument("-a", "--jump_address", type=int, default=1, help="Address of the first instruction. Default: 1")
+parser.add_argument("--instr_size", type=int, default=1, help="How many 'lines' one instruction takes. Default: 1")
 parser.add_argument("-r", "--register_address", type=int, default=0, help="Address of the first register. Default: 0")
 
 parser.add_argument("-v", "--verbose", action="store_true")
+parser.add_argument("--assemble", action="store_true")
 
 parser.add_argument("-s", "--stack", action="store_true", help="Activate stack operations like push & pop (requires pointers to be working)")
 parser.add_argument("-f", "--func", action="store_true", help="Activate the base miv instruction and with it call & ret")
@@ -25,7 +27,7 @@ io_offset = 0
 e_offset = 0
 
 
-if __name__ == '__main__':
+def compile():
     with open(args.input) as f:
         lines = f.readlines()
 
@@ -390,7 +392,7 @@ dec {r}
             labels[code[i][0].replace(":", "")] = instr_offset
             code[i] = None
         else:
-            instr_offset += 1
+            instr_offset += args.instr_size
         i += 1
     i = 0
     while i < len(code):
@@ -409,7 +411,6 @@ dec {r}
                     print("Unrecognized label", code[i][1])
                     exit(1)
 
-        instr_offset += 1
         i +=1
 
     code_new = []
@@ -427,3 +428,25 @@ dec {r}
         com = args.input
         info = f";;; MURMEL++ OUTPUT ({com}) ;;;\n;; instr_offset {args.jump_address}, register_offset {global_offset}\n;; r0 = {r_offset}, s0 = {s_offset}"
         f.write(info + "\n" + "\n".join(code))
+
+
+
+if __name__ == "__main__":
+    if not args.assemble:
+        compile()
+    else:
+        inp = ""
+        with open(args.input) as f:
+            for line in f.readlines():
+                ll = line.split(";")[0].strip()
+                if ll == "":
+                    continue
+                inp += ll + "\n"
+
+        inp = inp.replace("inc ", "0\n")
+        inp = inp.replace("dec ", "1\n")
+        inp = inp.replace("jmp ", "2\n")
+        inp = inp.replace("tst ", "3\n")
+        inp = inp.replace("hlt ", "4\n")
+        with open(args.output+"bin", "w") as f:
+            f.write(inp)

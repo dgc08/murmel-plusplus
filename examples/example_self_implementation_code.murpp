@@ -1,0 +1,4 @@
+start:
+    mov e0 #3
+    mov e1 e0
+    hlt 0
