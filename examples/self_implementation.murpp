@@ -54,7 +54,7 @@ exec:
             inc e0
             jmp exec
     hlt:
-        mov e0 #3
+        mov e0 #7
         hlt
 
     end:

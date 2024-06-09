@@ -12,12 +12,16 @@ parser.add_argument("--instr_size", type=int, default=1, help="How many 'lines' 
 parser.add_argument("-r", "--register_address", type=int, default=0, help="Address of the first register. Default: 0")
 
 parser.add_argument("-v", "--verbose", action="store_true")
-parser.add_argument("--assemble", action="store_true")
+parser.add_argument("--assemble", action="store_true", help="Assemble the program with the mrubin standart. Overwrites instr_size and jump_address")
 
 parser.add_argument("-s", "--stack", action="store_true", help="Activate stack operations like push & pop (requires pointers to be working)")
 parser.add_argument("-f", "--func", action="store_true", help="Activate the base miv instruction and with it call & ret")
 
 args = parser.parse_args()
+
+if args.assemble:
+    args.instr_size = 2
+    args.jump_address = 7
 
 global_offset = args.register_address
 
@@ -25,6 +29,27 @@ s_offset = 8
 r_offset = 16
 io_offset = 0
 e_offset = 0
+
+
+def repl_registers(text):
+    def match(pattern, letter, offset, text):
+        #print(pattern, text, end=" ")
+        matches = re.findall(pattern, text)
+        #print(matches)
+        for i in matches:
+            text = text.replace(i, str(int(i.replace(letter, "")) + offset))
+        return text
+
+    # general purpose
+    text = match(r"r\d+", "r", r_offset+global_offset, text)
+    # s
+    text = match(r"s\d+", "s", s_offset+global_offset, text)
+    # io
+    text = match(r"io\d+", "io", io_offset+global_offset, text)
+    # e
+    text = match(r"e\d+", "e", e_offset+global_offset, text)
+
+    return text
 
 
 def compile():
@@ -339,48 +364,7 @@ dec {r}
 
         builtin_labels += max_label + 1
 
-    # Stage 2: Replace register names
-    i = 0
-    def repl_registers(text):
-        def match(pattern, letter, offset, text):
-            #print(pattern, text, end=" ")
-            matches = re.findall(pattern, text)
-            #print(matches)
-            for i in matches:
-                text = text.replace(i, str(int(i.replace(letter, "")) + offset))
-            return text
-
-        # general purpose
-        text = match(r"r\d+", "r", r_offset+global_offset, text)
-        # s
-        text = match(r"s\d+", "s", s_offset+global_offset, text)
-        # io
-        text = match(r"io\d+", "io", io_offset+global_offset, text)
-        # e
-        text = match(r"e\d+", "e", e_offset+global_offset, text)
-
-        return text
-
-
-    while i < len(code):
-        if code[i] == [] or code[i][0].endswith(":") or "$" in " ".join(code[i]):
-            pass
-        elif len(code[i]) == 2:
-            #print("before", code[i][1], end=" ")
-            code[i][1] = repl_registers(code[i][1])
-            #print("after", code[i][1])
-        # elif len(code[i]) == 3:
-        #     code[i][1] = repl_registers(code[i][1])
-        #     code[i][2] = repl_registers(code[i][2])
-        elif code[i][0] == "hlt":
-            pass
-        else:
-            print(code)
-            print("Wrong number of arguments:", code[i])
-            exit(1)
-        i += 1
-
-    # Stage 3
+    # Stage 2 Linking
     if args.verbose:
         print ("PRE-LINKING", code)
     i = 0
@@ -420,34 +404,34 @@ dec {r}
             code_new.append(i)
     code = code_new
 
-    with open(args.output, "w") as f:
-        i = 0
-        while i < len(code):
-            code[i] = " ".join(code[i])
-            i += 1
+    i = 0
+    while i < len(code):
+        code[i] = " ".join(code[i])
+        i += 1
 
-        com = args.input
-        info = f";;; MURMEL++ OUTPUT ({com}) ;;;\n;; instr_offset {args.jump_address}, register_offset {global_offset}\n;; r0 = {r_offset}, s0 = {s_offset}"
-        f.write(info + "\n" + "\n".join(code))
+    return "\n".join(code)
 
 
 
 if __name__ == "__main__":
     if not args.assemble:
-        compile()
+        info = f";;; MURMEL++ OUTPUT ({args.input}) ;;;\n;; instr_offset {args.jump_address}, register_offset {global_offset}\n;; r0 = {r_offset}, s0 = {s_offset}\n"
+        out = info + repl_registers(compile())
     else:
-        inp = ""
-        with open(args.input) as f:
-            for line in f.readlines():
-                ll = line.split(";")[0].strip()
-                if ll == "":
-                    continue
-                inp += ll + "\n"
+        inp = compile()
 
         inp = inp.replace("inc ", "0\n")
         inp = inp.replace("dec ", "1\n")
         inp = inp.replace("jmp ", "2\n")
         inp = inp.replace("tst ", "3\n")
+
+        inp = inp.replace("hlt\n", "4\n0\n")
+        inp = inp.replace("hlt \n", "4\n0\n")
         inp = inp.replace("hlt ", "4\n")
-        with open(args.output+"bin", "w") as f:
-            f.write(inp)
+
+        global_offset = len(inp.split("\n")) + 7
+        out = "7\n" + "0\n"*6 + repl_registers(inp)
+        args.output += "bin"
+
+    with open(args.output, "w") as f:
+            f.write(out)
