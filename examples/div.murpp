@@ -1,21 +1,34 @@
-;; My implementation of integer division
+;; My implementation of integer division, also used for the murpp compiler
+;; I stripped the indentation so I can add it to murpp more easily
+
 ;; Could probably be done way more efficiently as i used murpp
 ;; io0 & io1 are inputs
-;; s4 is remainder, result in io0
-;; This is NOT the version for murpp's `div`, this doesn't calculate x/x correctly and the output register are different in the final
+;; s5 is remainder, result in s4
 
+jiz io1 divbyzero
 movz s3
 start:
-    cpy s1 io0
-    cpy s2 io1
-    cmp s1 s2
-    case s4 end,iter,end
+cpy s1 io1
+sub:
+jiz io0 finish
+jiz s1 iter
+dec s1
+dec io0
+jmp sub
 iter:
-    inc s3
-    cpy s2 io1
-    sub io0 s2
-    jmp start
+inc s3
+jmp start
+finish:
+jinz s1 remainder
+inc s3
+movz s5
+mov s4 s3
+jmp end
+divbyzero:
+mov io6 #3
+hlt
+remainder:
+mov s5 s1
+mov s4 s3
 end:
-    mov s4 io0
-    mov io0 s3
-    movz io1
+movz io1

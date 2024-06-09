@@ -1,0 +1,10 @@
+; mov e0 #3
+; mov e1 #2
+; mov e2 #4
+mov e0 #3
+mov e1 #2
+mov e2 #4
+start:
+    inc *e0
+    inc **e1
+    jmp start

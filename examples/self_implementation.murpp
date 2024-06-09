@@ -6,7 +6,7 @@
 
 ;; e0 is ip
 ;; e1 & e2 is temp storage
-;; user program starts at e2, program and the registers/the stack lie in the same memory.
+;; user program/memory starts at (e)3, program and the registers/the stack lie in the same memory.
 ;; Make sure to account for the space for e0, e1 and e2 while setting offsets in mem
 
 ;; Instruction format: first register is opcode, next register is argument. `hlt` takes 0 as argument
@@ -21,13 +21,12 @@
 ;; How to compile stuff for this
 
 ;; Command flags:
-;; -a 5 --instr_size 2 -r 3
+;; -a [number] --instr_size 2 -r 3
 ;; a is number of the highest register + 4
 ;; (if you for example use registers up to e2 you should use -a 6)
 
 ;; run murpp on the output file with --assemble. It will produce a *bin file.
-;; You need to add how many new lines with 0 in it as the number you used for the -a flag.
-;; That will be the data / array register, every line represents an array.
+;; Make sure to include a number of blank lines containing 0 equal to the value specified with the -a flag.
 
 exec:
     mov e2 *e0
