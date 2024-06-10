@@ -7,15 +7,15 @@ parser = argparse.ArgumentParser(description='Compiler for murmel++ assembly')
 
 parser.add_argument("input", type=str)
 parser.add_argument("-o", "--output", type=str, default="out.mur")
-parser.add_argument("-a", "--jump_address", type=int, default=1, help="Address of the first instruction. Default: 1")
+parser.add_argument("-a", "--jump_address", type=int, default=0, help="Address of the first instruction. Default: 0")
 parser.add_argument("--instr_size", type=int, default=1, help="How many 'lines' one instruction takes. Default: 1")
 parser.add_argument("-r", "--register_address", type=int, default=0, help="Address of the first register. Default: 0")
 
 parser.add_argument("-v", "--verbose", action="store_true")
 parser.add_argument("--assemble", action="store_true", help="Assemble the program with the mrubin standart. Overwrites instr_size and jump_address")
 
-parser.add_argument("-s", "--stack", action="store_true", help="Activate stack operations like push & pop (requires pointers to be working)")
-parser.add_argument("-f", "--func", action="store_true", help="Activate the base miv instruction and with it call & ret")
+#parser.add_argument("-s", "--stack", action="store_true", help="Activate stack operations like push & pop (requires pointers to be working)")
+#parser.add_argument("-f", "--func", action="store_true", help="Activate the base miv instruction and with it call & ret")
 
 args = parser.parse_args()
 
@@ -387,7 +387,7 @@ dec {r}
         if code[i][0].endswith(":"):
             continue
         if code[i][0] == "jmp":
-            if code[i][1][0] == "*":
+            if code[i][1][0] == "*" or code[i][1].isdigit():
                 pass
             else:
                 try:
@@ -430,7 +430,7 @@ if __name__ == "__main__":
         inp = inp.replace("hlt ", "4\n")
 
         global_offset = len(inp.split("\n")) + 7
-        out = "7\n" + "0\n"*6 + repl_registers(inp)
+        out = "7\n" + str(global_offset) + "\n0"*5 + "\n" + repl_registers(inp)
         args.output += "bin"
 
     with open(args.output, "w") as f:

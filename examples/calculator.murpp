@@ -14,7 +14,7 @@
 ;;      3: Division by zero
 ;; io7: "Status LED". Program awaits user input if empty, if it's 1 it is still calculating
 
-movz io3,io4,io5,io6,io7
+movz io4,io5,io6,io7
 start:
     jz io3 start
 

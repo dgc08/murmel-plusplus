@@ -141,7 +141,7 @@ void print_io(size_t ip, Instr& instr, bool force_reprint = false)  {
     auto currentTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastExecutionTime).count();
 
-    if (elapsedTime < REPRINT_TIME && !force_reprint) {
+    if (elapsedTime < REPRINT_TIME || force_reprint) {
         return; // Return if less than 50ms elapsed since last execution
     }
     lastExecutionTime = std::chrono::steady_clock::now();
@@ -231,7 +231,7 @@ void execute() {
                 guessed_waiting = false;
                 break;
             case Opcode::jmp:
-                ip = arg - 1;
+                ip = arg;
                 instr_count++;
                 continue;
             case Opcode::tst:
@@ -246,7 +246,7 @@ void execute() {
         auto currentTime = std::chrono::steady_clock::now();
         auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastExecutionTime).count();
 
-        if (elapsedTime > REPRINT_TIME+1) {
+        if (elapsedTime > REPRINT_TIME+10) {
             if (!guessed_waiting) {
                 guessed_waiting = true;
                 print_io(ip, instr, true);
@@ -294,17 +294,29 @@ void executeCommand(const std::vector<std::string>& tokens) {
             std::cout << "Usage: load-mem <filename>" << std::endl;
         }
     }
-    else if (tokens.size() == 1 && is_int(tokens[0])) {
-        std::cout << get_mem(std::stoi(tokens[0])) << std::endl;
+    else if (tokens.size() == 1 && (is_int(tokens[0]) || (tokens[0][0] == 'e' && isdigit(tokens[0][1])))) {
+        if (is_int(tokens[0]))
+            std::cout << get_mem(std::stoi(tokens[0])) << std::endl;
+        else {
+            std::cout << get_mem(std::stoi(tokens[0].substr(1)) + view) << std::endl;
+        }
     }
-    else if (tokens.size() == 2 && is_int(tokens[0]) && is_int(tokens[1])) {
-        unsigned int one = std::stoi(tokens[0]);
+    else if (tokens.size() == 2 && (is_int(tokens[0]) || (tokens[0][0] == 'e' && isdigit(tokens[0][1]))) && is_int(tokens[1])) {
+        unsigned int one;
+        if (is_int(tokens[0]))
+            one = std::stoi(tokens[0]);
+        else
+            one = std::stoi(tokens[0].substr(1)) + view;
+
         unsigned int two = std::stoi(tokens[1]);
 
         set_mem(one, two);
     }
     else if ((tokens[0] == "r" || tokens[0] == "run" ) && !running) {
-        if (once) exec.join();
+        if (running ) {
+            running = false;
+            exec.join();
+        }
         running = true;
         exec = std::thread(execute);
     }
