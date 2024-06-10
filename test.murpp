@@ -1,3 +1,4 @@
-div e0 e1
-mov e2 s4
-mov e3 s5
+start:
+    mov e0 #3
+    mov 4 e0
+    hlt 0

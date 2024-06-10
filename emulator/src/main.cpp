@@ -30,7 +30,6 @@ std::vector<unsigned int> mem(32, 0);
 
 std::thread exec;
 volatile bool running = false;
-volatile bool once = false;
 
 size_t view = 0;
 std::vector<unsigned int> last_prints(32, 0);
@@ -141,7 +140,7 @@ void print_io(size_t ip, Instr& instr, bool force_reprint = false)  {
     auto currentTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastExecutionTime).count();
 
-    if (elapsedTime < REPRINT_TIME || force_reprint) {
+    if (elapsedTime < REPRINT_TIME && !force_reprint) {
         return; // Return if less than 50ms elapsed since last execution
     }
     lastExecutionTime = std::chrono::steady_clock::now();
@@ -155,7 +154,7 @@ void print_io(size_t ip, Instr& instr, bool force_reprint = false)  {
         std::string form = ": \033[94m";
         if (get_mem(i) != last_prints[i-view]) {
             form = ": \033[96m";
-            last_prints[i] = get_mem(i);
+            last_prints[i - view] = get_mem(i);
         }
         else if (get_mem(i) == 0) {
             form = ": \033[90m";
@@ -184,7 +183,6 @@ void print_io(size_t ip, Instr& instr, bool force_reprint = false)  {
 void execute() {
     bool guessed_waiting = false;
 
-    once = true;
     std::cout << "started" << std::endl;
     size_t ip = 0;
     print_io(ip, instrs.at(ip));
@@ -239,7 +237,7 @@ void execute() {
                 break;
             case Opcode::hlt:
                 running = false;
-                std::cout << "hlt called: " << std::endl << std::endl << std::flush;
+                std::cout << std::endl << "hlt called: " << arg << std::endl << std::endl << std::flush;
                 break;
         }
 
@@ -259,7 +257,7 @@ void execute() {
         instr_count++;
         ip++;
     }
-    std::cout << "finished, last instr:" << ip-1 << std::endl;
+    std::cout << "finished, last instr: " << ip-1 << std::endl;
     ip = 0;
     std::cout << std::endl;
     newline_needed=false;
@@ -320,13 +318,13 @@ void executeCommand(const std::vector<std::string>& tokens) {
         running = true;
         exec = std::thread(execute);
     }
-    else if (tokens[0] == "s" ||tokens[0] == "stop" ) {
+    else if (tokens[0] == "h" ||tokens[0] == "stop" ) {
         if (running ) {
             running = false;
             exec.join();
         }
     }
-    else if (tokens[0] == "v") {
+    else if (tokens[0] == "v" || tokens[0] == "s") { // You know how often i typed s instead of v
         if (tokens.size() == 1) {
             view = 0;
             return;
@@ -346,7 +344,7 @@ void executeCommand(const std::vector<std::string>& tokens) {
         }
     }
     else if (tokens[0] == "exit" || tokens[0] == "q") {
-        if (running ) {
+        if (running) {
             running = false;
             exec.join();
         }

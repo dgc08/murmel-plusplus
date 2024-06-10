@@ -12,7 +12,7 @@ parser.add_argument("--instr_size", type=int, default=1, help="How many 'lines' 
 parser.add_argument("-r", "--register_address", type=int, default=0, help="Address of the first register. Default: 0")
 
 parser.add_argument("-v", "--verbose", action="store_true")
-parser.add_argument("--assemble", action="store_true", help="Assemble the program with the mrubin standart. Overwrites instr_size and jump_address")
+parser.add_argument("--assemble", action="store_true", help="Assemble the program with the murbin standart. Overwrites instr_size and jump_address")
 
 #parser.add_argument("-s", "--stack", action="store_true", help="Activate stack operations like push & pop (requires pointers to be working)")
 #parser.add_argument("-f", "--func", action="store_true", help="Activate the base miv instruction and with it call & ret")
@@ -181,11 +181,11 @@ jmp {label2}
 
 
         ###
-        elif code[i][0].lower() == "mul" and code[i][2][0] != "#":
+        elif code[i][0].lower() == "mul":
             max_label = 4
             asm = """\
 movz s0
-movz s4
+movz {dest}
 {label0}:
 jiz {op0} {label4}
 dec {op0}
@@ -193,7 +193,7 @@ dec {op0}
 jiz {op1} {label2}
 dec {op1}
 inc s0
-inc s4
+inc {dest}
 jmp {label1}
 {label2}:
 jiz {op0} {label4}
@@ -202,12 +202,12 @@ dec {op0}
 jiz s0 {label0}
 dec s0
 inc {op1}
-inc s4
+inc {dest}
 jmp {label3}
 {label4}:
 movz {op1}
 """
-            form = {"op0": code[i][1], "op1":code[i][2]}
+            form = {"dest":code[i][1], "op0": code[i][2], "op1":code[i][3]}
 
 
         ###
@@ -215,7 +215,7 @@ movz {op1}
             max_label = 6
             asm = """\
 jiz {op1} {label6}
-movz s3
+movz {dest}
 {label0}:
 cpy s1 {op1}
 {label1}:
@@ -225,24 +225,22 @@ dec s1
 dec {op0}
 jmp {label1}
 {label2}:
-inc s3
+inc {dest}
 jmp {label0}
 {label3}:
 jinz s1 {label4}
-inc s3
+inc {dest}
 movz s5
-mov s4 s3
 jmp {label5}
 {label6}:
 mov io6 #3
-hlt
+hlt 3
 {label4}:
 mov s5 s1
-mov s4 s3
 {label5}:
 movz {op1}
 """
-            form = {"op0": code[i][1], "op1":code[i][2]}
+            form = {"dest":code[i][1], "op0": code[i][2], "op1":code[i][3]}
 
         ###
         elif code[i][0].lower() == "cpy" and code[i][2][0] != "#":
@@ -420,17 +418,26 @@ if __name__ == "__main__":
     else:
         inp = compile()
 
+        inp = inp.replace("inc *", "5\n")
+        inp = inp.replace("dec *", "6\n")
+        inp = inp.replace("jmp *", "7\n")
+        inp = inp.replace("tst *", "8\n")
+
         inp = inp.replace("inc ", "0\n")
         inp = inp.replace("dec ", "1\n")
         inp = inp.replace("jmp ", "2\n")
         inp = inp.replace("tst ", "3\n")
 
+        inp = inp.replace("hlt *", "9\n")
+
         inp = inp.replace("hlt\n", "4\n0\n")
         inp = inp.replace("hlt \n", "4\n0\n")
         inp = inp.replace("hlt ", "4\n")
+        inp = inp.replace("hlt", "4\n0")
+
 
         global_offset = len(inp.split("\n")) + 7
-        out = "7\n" + str(global_offset) + "\n0"*5 + "\n" + repl_registers(inp)
+        out = "7\n" + str(global_offset) + "\n0\n0\n" + str(global_offset) + "\n0"*3 + "\n" + repl_registers(inp)
         args.output += "bin"
 
     with open(args.output, "w") as f:

@@ -1,8 +1,11 @@
 ;; Lets try this
 
+;; Title: Bonsai/Murmel emulation using murmel with pointers
 ;; AUTHOR: Sinthoras39
-;; This assumes you have pointers available on your Bonsai/Murmel Emulation
-;; I assume that pointers are dereferenced with *
+
+;; This assumes you have at least one level of pointers available on your Bonsai/Murmel Emulation that are dereferenced with *
+;; This only dereferences one pointer at max. This makes this really slow, but enables this to run itself
+;; Check out commit ca7e7287c569fffafdc008e3d52de98a81a98cf5 for an old version which runs faster (it doesn't implement pointers though so it can't run itself)
 
 ;; e0 is ip
 ;; e1 & e2 is temp storage
@@ -18,27 +21,23 @@
 ;; 3: tst
 ;; 4: hlt
 
-;; How to compile stuff for this
-
-;; Command flags:
-;; -a [number] --instr_size 2 -r 3
-;; a is number of the highest register + 4
-;; (if you for example use registers up to e2 you should use -a 6)
-
-;; run murpp on the output file with --assemble. It will produce a *bin file.
-;; Make sure to include a number of blank lines containing 0 equal to the value specified with the -a flag.
+;; Use murpp with the --assemble flag and it will produce valid memory files for this
 
 exec:
     mov e2 *e0
     mov *e0,e1 e2
     inc e0
-    case e1 inc,dec,jmp,tst,hlt default
+    case e1 inc,dec,jmp,tst,hlt,incp,decp,jmpp,tstp,hltp default
 
     inc:
-        inc **e0
+        mov e2 *e0
+        mov *e0,e1 e2
+        inc *e1
         jmp end
     dec:
-        dec **e0
+        mov e2 *e0
+        mov *e0,e1 e2
+        dec *e1
         jmp end
     jmp:
         mov e2 *e0
@@ -46,7 +45,9 @@ exec:
         mov e0 e1
         jmp exec
     tst:
-        jz **e0 skip
+        mov e2 *e0
+        mov *e0,e1 e2
+        jz *e1 skip
         jmp end
         skip:
             inc e0
@@ -54,6 +55,47 @@ exec:
             inc e0
             jmp exec
     hlt:
+        mov e1 *e0
+        mov *e0,e2,e6 e1
+        mov e0 #7
+        hlt
+    incp:
+        mov e2 *e0
+        mov *e0,e1 e2
+        mov e2 *e1
+        inc *e2
+        mov *e1 e2
+        jmp end
+    decp:
+        mov e2 *e0
+        mov *e0,e1 e2
+        mov e2 *e1
+        dec *e2
+        mov *e1 e2
+        jmp end
+    jmpp:
+        mov e2 *e0
+        mov e1,*e0 e2
+        mov e0,e2 *e1
+        mov *e1 e2
+        jmp exec
+    tstp:
+        mov e2 *e0
+        mov *e0,e1 e2
+        mov e2 *e1
+        jz *e2 skip
+        mov *e1 e2
+        jmp end
+        skip:
+            inc e0
+            inc e0
+            inc e0
+            mov *e1 e2
+            jmp exec
+    hltp:
+        mov e2 *e0
+        mov *e0,e1 e2
+        mov e2,e6 *e1
         mov e0 #7
         hlt
 
@@ -62,5 +104,5 @@ exec:
         jmp exec
 
 default:
-    mov e2 #2
+    mov e2,e6 #2
     hlt

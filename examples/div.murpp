@@ -6,7 +6,7 @@
 ;; s5 is remainder, result in s4
 
 jiz io1 divbyzero
-movz s3
+movz s4
 start:
 cpy s1 io1
 sub:
@@ -16,19 +16,17 @@ dec s1
 dec io0
 jmp sub
 iter:
-inc s3
+inc s4
 jmp start
 finish:
 jinz s1 remainder
-inc s3
+inc s4
 movz s5
-mov s4 s3
 jmp end
 divbyzero:
 mov io6 #3
 hlt
 remainder:
 mov s5 s1
-mov s4 s3
 end:
 movz io1

@@ -35,16 +35,14 @@ start:
     mul:
         inc io2
         inc io2
-        mul io0 io1
-        add io4 s4
+        mul io4 io0 io1
         jmp finish
     div:
         inc io2
         inc io2
         inc io2
         jz io1 divbyzero
-        div io0 io1
-        add io4 s4
+        div io4 io0 io1
         add io5 s5
         jmp finish
         divbyzero:
