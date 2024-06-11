@@ -5,8 +5,8 @@
 ;;
 ;; io0: op0
 ;; io1: op1
-;; io2: What op: 0|+, 1|-, 2|*, 3|*, 4|hlt
-;; io3: Start calculation / Accept op0 and op1
+;; io2: What operation to do: 0 is +, 1 is -, 2 is *, 3 is /, anything else is hlt
+;; io3: Start calculation
 ;; io4: Output
 ;; io5: Signed bit for subtraction OR remainder for division
 ;; io6: Interrupt channel & Error messages. To continue, clear it and you can edit your inputs.

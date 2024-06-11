@@ -245,11 +245,13 @@ movz {op1}
         ###
         elif code[i][0].lower() == "cpy" and code[i][2][0] != "#":
             max_label = -1
+            if len(code[i]) == 3:
+                code[i].append("s0")
             asm = """\
-mov s0 {value}
-mov {value},{dst} s0
+mov {reg} {value}
+mov {value},{dst} {reg}
 """
-            form = {"value": code[i][2], "dst":code[i][1]}
+            form = {"value": code[i][2], "dst":code[i][1], "reg":code[i][3]}
 
             found = False
             for dest in code[i][1].split(","):
@@ -313,9 +315,11 @@ movz {op1}
         elif code[i][0].lower() == "int":
             if code[i] == ["int"]:
                 code[i] = ["int", "1"]
+            if len(code[i]) == 2:
+                code[i].append("io6")
             max_label = 0
-            form = {"code":code[i][1]}
-            asm = "mov io6 #{code}\n{label0}:\njinz io6 {label0}\n"
+            form = {"code":code[i][1], "reg":code[i][2]}
+            asm = "mov {reg} #{code}\n{label0}:\njinz {reg} {label0}\n"
 
         ###
         elif code[i][0].lower() == "case" and code[i][2][0] != "#":
@@ -433,11 +437,11 @@ if __name__ == "__main__":
         inp = inp.replace("hlt\n", "4\n0\n")
         inp = inp.replace("hlt \n", "4\n0\n")
         inp = inp.replace("hlt ", "4\n")
-        inp = inp.replace("hlt", "4\n0")
+        inp = inp.replace("hlt", "4\n0\n")
 
-
+        print (inp, "lol", len(inp.split("\n")))
         global_offset = len(inp.split("\n")) + 7
-        out = "7\n" + str(global_offset) + "\n0\n0\n" + str(global_offset) + "\n0"*3 + "\n" + repl_registers(inp)
+        out = "7\n" + str(global_offset) + "\n0\n0\n" + str(global_offset) + "\n0"*2 + "\n" + repl_registers(inp)
         args.output += "bin"
 
     with open(args.output, "w") as f:

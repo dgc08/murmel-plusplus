@@ -1,20 +1,28 @@
 # concept
+Ignore this that is is kind of scratchpaper and outdated look at readme
+
+murbin ret code:
+0 - all fine
+1 - general error
+2 - segfault kind of error
+3 - arithmetic error (div by 0)
+
+mem layout
+0 - esp
+1 - before run adress of e0, then temp
+2 - temp
+
+3 - activate output (set to 1 by program, set back to 0 if read by OS/emulator)
+4 - output (char)
+
+5 - activate input (set to 1 by emulator)
+6 - input (char)
+
 ## registers
 - e[0-inf] maps 0-inf
 - io[0-7] maps 0-7
 - s[0-7] maps 8-15
 - r[0-inf] maps 16-inf
-
-### special
-- sp: s2 or e10
-
-## stages
-stage 1:
-replace functions
-stage 2:
-compute register offsets
-stage 3:
-link labels
 
 ## instr
 labels: you can only jump to labels
