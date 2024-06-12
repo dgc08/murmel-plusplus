@@ -57,8 +57,7 @@ exec:
     hlt:
         mov e1 *e0
         mov *e0,e2,e6 e1
-        mov e0 #7
-        hlt
+        hlt *e2
     incp:
         mov e2 *e0
         mov *e0,e1 e2
@@ -96,8 +95,7 @@ exec:
         mov e2 *e0
         mov *e0,e1 e2
         mov e2,e6 *e1
-        mov e0 #7
-        hlt
+        hlt *e2
 
     end:
         inc e0
