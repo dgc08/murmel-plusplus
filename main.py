@@ -23,6 +23,8 @@ if args.assemble:
     args.instr_size = 2
     args.jump_address = 7
 
+max_addr = 0
+
 global_offset = args.register_address
 
 s_offset = 8
@@ -32,12 +34,16 @@ e_offset = 0
 
 
 def repl_registers(text):
+    global max_addr
     def match(pattern, letter, offset, text):
+        global max_addr
         #print(pattern, text, end=" ")
         matches = re.findall(pattern, text)
         #print(matches)
         for i in matches:
-            text = text.replace(i, str(int(i.replace(letter, "")) + offset))
+            num = int(i.replace(letter, "")) + offset
+            max_addr = max(max_addr, num)
+            text = text.replace(i, str(num))
         return text
 
     # general purpose
@@ -48,6 +54,14 @@ def repl_registers(text):
     text = match(r"io\d+", "io", io_offset+global_offset, text)
     # e
     text = match(r"e\d+", "e", e_offset+global_offset, text)
+
+
+    # 1+1
+    matches = re.findall(r'(\d+)\+(\d+)', text)
+
+    for match in matches:
+        sum_result = str(int(match[0]) + int(match[1]))
+        text = re.sub(r'\b' + re.escape('+'.join(match)) + r'\b', sum_result, text)
 
     return text
 
@@ -103,8 +117,18 @@ def compile():
             for dest in code[i][1].split(","):
                 found = True
                 form["movzs"] = form.get("movzs", "") + f"movz {dest}\n"
-                for inc in range(int(code[i][2][1:])):
-                    form["incs"] = form.get("incs", "") + f"inc {dest}\n"
+                expr = eval(code[i][2][1:])
+                if type(expr) == int:
+                    for inc in range(expr):
+                        form["incs"] = form.get("incs", "") + f"inc {dest}\n"
+                if type(expr) == str:
+                    if len(expr) < 1:
+                        form["incs"] = form.get("incs", "") + f"movz {dest}\n"
+                    if len(expr) > 1:
+                        for i, char in enumerate(expr):
+                            form["incs"] = form.get("incs", "") + f"mov {dest}+{i} #"+ str(ord(char)) + "\n"
+                    elif len(expr) == 1:
+                        form["incs"] = form.get("incs", "") + f"mov {dest} #"+ str(ord(expr)) + "\n"
 
             if not found:
                 print("Wrong number of argumentss:", " ".join(code[i]))
@@ -441,7 +465,10 @@ if __name__ == "__main__":
 
         print (inp, "lol", len(inp.split("\n")))
         global_offset = len(inp.split("\n")) + 7
-        out = "7\n" + str(global_offset) + "\n0\n0\n" + str(global_offset) + "\n0"*2 + "\n" + repl_registers(inp)
+        out = "7\n" + str(global_offset) + "\n0\n0\n0\n0\n" + str(global_offset) + "\n" + repl_registers(inp)
+
+        out += '\n' + "0\n" * max_addr
+
         args.output += "bin"
 
     with open(args.output, "w") as f:

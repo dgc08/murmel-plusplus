@@ -1,4 +1,2 @@
 start:
-    mov e0 #3
-    mov 4 e0
-    hlt 0
+    mov e0 #"abc"
