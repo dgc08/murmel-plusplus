@@ -23,6 +23,8 @@ if args.assemble:
     args.instr_size = 2
     args.jump_address = 7
 
+meminit = []
+
 max_addr = 0
 
 global_offset = args.register_address
@@ -31,6 +33,7 @@ s_offset = 8
 r_offset = 16
 io_offset = 0
 e_offset = 0
+data_offset = 0
 
 
 def repl_registers(text):
@@ -54,6 +57,8 @@ def repl_registers(text):
     text = match(r"io\d+", "io", io_offset+global_offset, text)
     # e
     text = match(r"e\d+", "e", e_offset+global_offset, text)
+    # data
+    text = match(r"d\d+", "d", data_offset, text)
 
 
     # 1+1
@@ -86,27 +91,26 @@ def compile():
             continue
 
         ###
-        if code[i][0].lower() == "movz":
-            if "," in code[i][1]:
-                code[i][0] = "mov"
-                if len(code[i]) > 2:
-                    code[i][2] = "#0"
-                else:
-                    code[i].append("#0")
+        if code[i][0].lower() == "meminit":
+            if not args.assemble:
+                max_label = -1
+                asm = "mov {dest} {value}"
+                form = {"dest": code[i][1], "value": code[i][2]}
+            else:
+                global meminit
+
+                val = eval(code[i][2][1:])
+                arr = []
+
+                if type(val) == int:
+                    arr.append(str(val))
+                if type(val) == str:
+                    for char in val:
+                        arr.append(str(ord(char)))
+
+                meminit.append((code[i][1], arr))
+                del code[i]
                 continue
-
-            max_label = 2
-            asm = """\
-{label0}:
-    tst {value}
-    jmp {label1}
-    jmp {label2}
-{label1}:
-    dec {value}
-    jmp {label0}
-{label2}:"""
-            form = {"value": code[i][1]}
-
         ###
         elif code[i][0].lower() == "mov" and code[i][2][0] == "#":
             max_label = -1
@@ -133,6 +137,28 @@ def compile():
             if not found:
                 print("Wrong number of argumentss:", " ".join(code[i]))
                 exit(1)
+
+        ###
+        elif code[i][0].lower() == "movz":
+            if "," in code[i][1]:
+                code[i][0] = "mov"
+                if len(code[i]) > 2:
+                    code[i][2] = "#0"
+                else:
+                    code[i].append("#0")
+                continue
+
+            max_label = 2
+            asm = """\
+{label0}:
+    tst {value}
+    jmp {label1}
+    jmp {label2}
+{label1}:
+    dec {value}
+    jmp {label0}
+{label2}:"""
+            form = {"value": code[i][1]}
 
         ###
         elif code[i][0].lower() == "mov" and code[i][2][0] != "#":
@@ -463,9 +489,30 @@ if __name__ == "__main__":
         inp = inp.replace("hlt ", "4\n")
         inp = inp.replace("hlt", "4\n0\n")
 
-        print (inp, "lol", len(inp.split("\n")))
-        global_offset = len(inp.split("\n")) + 7
-        out = "7\n" + str(global_offset) + "\n0\n0\n0\n0\n" + str(global_offset) + "\n" + repl_registers(inp)
+        mem = ["7", "0", "0", "0", "0", "0", "0"]
+        mem[7:] = inp.split("\n")
+
+        data_offset = len(mem)
+        data = []
+        for i in meminit:
+            if i[0].startswith("d"):
+                addr = int(i[0][1:])
+                data[addr:addr+len(i[1])] = i[1]
+        mem += data
+
+        global_offset = len(mem)
+        mem[1] = str(global_offset)
+        mem[6] = str(global_offset)
+
+
+        for i in meminit:
+            addr = int(repl_registers(i[0]))
+            mem[addr:addr+len(i[1])] = i[1]
+
+        mem = ["0" if line == "" else repl_registers(line) for line in mem]
+
+
+        out = "\n".join(mem)
 
         out += '\n' + "0\n" * max_addr
 
