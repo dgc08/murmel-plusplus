@@ -114,29 +114,29 @@ def compile():
         ###
         elif code[i][0].lower() == "mov" and code[i][2][0] == "#":
             max_label = -1
-            asm = "{movzs}\n{incs}"
+            asm = "{incs}"
             form = {"incs":""}
 
             found = False
             for dest in code[i][1].split(","):
                 found = True
-                form["movzs"] = form.get("movzs", "") + f"movz {dest}\n"
                 expr = eval(code[i][2][1:])
                 if type(expr) == int:
                     for inc in range(expr):
                         form["incs"] = form.get("incs", "") + f"inc {dest}\n"
                 if type(expr) == str:
-                    if len(expr) < 1:
-                        form["incs"] = form.get("incs", "") + f"movz {dest}\n"
-                    if len(expr) > 1:
-                        for i, char in enumerate(expr):
-                            form["incs"] = form.get("incs", "") + f"mov {dest}+{i} #"+ str(ord(char)) + "\n"
-                    elif len(expr) == 1:
-                        form["incs"] = form.get("incs", "") + f"mov {dest} #"+ str(ord(expr)) + "\n"
+                    # if len(expr) < 1:
+                    #     form["incs"] = form.get("incs", "") + f"movz {dest}\n"
+                    # if len(expr) > 1:
+                    for j, char in enumerate(expr):
+                        form["incs"] = form.get("incs", "") + f"mov {dest}+{j} #"+ str(ord(char)) + "\n"
+                    # elif len(expr) == 1:
+                    #     form["incs"] = form.get("incs", "") + f"mov {dest} #"+ str(ord(expr)) + "\n"
 
             if not found:
                 print("Wrong number of argumentss:", " ".join(code[i]))
                 exit(1)
+
 
         ###
         elif code[i][0].lower() == "movz":
@@ -396,10 +396,10 @@ dec {r}
         try:
             form
         except NameError:
-            print("a")
+            print("NameError")
             i += 1
             continue
-
+        
         for j in range(max_label+1):
             form["label"+str(j)] = "0L"+str(j+builtin_labels)
 

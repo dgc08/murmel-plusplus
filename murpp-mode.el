@@ -20,13 +20,13 @@
 (defconst murpp-font-lock-keywords
   (list
    ;; Keywords
-   '("\\<\\(inc\\|dec\\|jmp\\|tst\\|hlt\\|mov\\|cpy\\|jiz\\|jinz\\|jz\\|jnz\\|add\\|sub\\|mul\\|div\\|cpy\\|movz\\|cmp\\|case\\|int\\)\\>" . font-lock-keyword-face)
+   '("\\<\\(inc\\|dec\\|jmp\\|tst\\|hlt\\|mov\\|cpy\\|jiz\\|jinz\\|jz\\|jnz\\|add\\|sub\\|mul\\|div\\|cpy\\|movz\\|cmp\\|case\\|meminit\\|int\\)\\>" . font-lock-keyword-face)
    ;; Registers
    '("\\<\\(s[0-9]+\\|r[0-9]+\\|io[0-9]+\\|e[0-9]+\\|)\\>" . font-lock-variable-name-face)
    ;; Labels
    '("^\\([a-zA-Z0-9_]+\\):" . font-lock-function-name-face)
    ;; Immediates
-   '("#[0-9]+" . font-lock-constant-face))
+   '("#\\([0-9]+\\|.*\\)$" . font-lock-constant-face))
   "Basic syntax highlighting for `murpp-mode'.")
 
 (defun murpp-mode ()
@@ -37,6 +37,8 @@
   (use-local-map murpp-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(murpp-font-lock-keywords))
   (set (make-local-variable 'indent-line-function) 'indent-relative)
+  (setq comment-start ";") ; Set comment start syntax
+  (setq comment-end "")    ; Set comment end syntax
   (setq major-mode 'murpp-mode)
   (setq mode-name "Murpp")
   (run-hooks 'murpp-mode-hook))

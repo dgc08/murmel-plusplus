@@ -1,6 +1,7 @@
 start:
     meminit d0 #"abc"
-    meminit d3 #"abc"
     meminit e0 #12
     inc e0
     inc d0
+
+hlt 0
