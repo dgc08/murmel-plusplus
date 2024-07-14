@@ -1,7 +1,18 @@
-start:
-    meminit d0 #"abc"
-    meminit e0 #12
-    inc e0
-    inc d0
+;movz 4,5
 
+meminit d0 #"hello, world\0"
+meminit r0 69
+mov r0 5 ;; string pointer
+
+putln:
+    movz 4
+    l.start:
+        jz *r0 l.end
+        mov 5 *r0
+        inc r0
+        int 1 3
+        jmp l.start
+        l.end:
+            mov 5 #"\n"
+            int 1 3
 hlt 0

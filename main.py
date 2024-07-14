@@ -78,7 +78,13 @@ def compile():
     # Stage 0: Parse, remove comments
     code = []
     for line in lines:
-        code.append(line.split(";")[0].strip().replace("jz", "jiz").replace("jnz", "jinz").split())
+        if " 0L" in line or line.startswith("0L"):
+            print(line, ": The prefix '0L' is reserved")
+            exit(1)
+
+        instr = line.split(";")[0].strip().replace("jz", "jiz").replace("jnz", "jinz").split(" ", 2)
+        if instr and instr != [] and instr != [""]:
+            code.append(instr)
 
     if args.verbose:
         print ("Read code", code, "\n\n")
@@ -114,12 +120,13 @@ def compile():
         ###
         elif code[i][0].lower() == "mov" and code[i][2][0] == "#":
             max_label = -1
-            asm = "{incs}"
+            asm = "{movzs}\n{incs}"
             form = {"incs":""}
 
             found = False
             for dest in code[i][1].split(","):
                 found = True
+                form["movzs"] = form.get("movzs", "") + f"movz {dest}\n"
                 expr = eval(code[i][2][1:])
                 if type(expr) == int:
                     for inc in range(expr):
@@ -502,6 +509,7 @@ if __name__ == "__main__":
 
         global_offset = len(mem)
         mem[1] = str(global_offset)
+        mem[5] = str(data_offset)
         mem[6] = str(global_offset)
 
 

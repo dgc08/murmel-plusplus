@@ -48,7 +48,7 @@ unsigned int* readFileIntoArray(const char* filename, size_t* outSize) {
 
 // All excellency of the murbin standart comes here
 void syscall() {
-  //printf("syscall %u\n", ins[4]);
+  //printf("syscall %u %u: ", ins[4], ins[5]);
   switch (ins[4]) {
     case 0:
       putchar(ins[5]);
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
     while (ins[0] < size-1) {
       unsigned int instr = ins[ins[0]];
       ins[0]++;
-      //printf("%u: %u, %u\n",ins[0]-1, instr, ins[ins[0]]);
+      /* printf("%u: %u, %u\n",ins[0]-1, instr, ins[ins[0]]); */
       switch (instr) {
         case 0:
           {
@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
           ins[0] = *deref(ins[ins[0]]);
           continue;
         case 8:
-          if (*deref(*deref((ins[ins[0]] == 0)))) {
+          if (*deref(*deref((ins[ins[0]]))) == 0) {
             ins[0]+=2;
           }
           break;

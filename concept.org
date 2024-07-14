@@ -1,0 +1,20 @@
+* Murbin
+0: esp
+1: -
+2: -
+3: interrupt/syscall signal to emulator / OS
+4: interrupt type:
+  0: output
+  1: input
+5: syscall argument
+6: syscall output
+* DONE C impl
+* DONE murpp eval #
+* DONE meminit
+* DONE d0
+* TODO makros
+* TODO Include
+* LOOP GOT Global offset table
+- saved by meminit
+- Not available on empty memory
+
