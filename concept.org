@@ -1,5 +1,5 @@
 * Murbin
-0: esp
+0: ip
 1: -
 2: -
 3: interrupt/syscall signal to emulator / OS
@@ -12,9 +12,7 @@
 * DONE murpp eval #
 * DONE meminit
 * DONE d0
-* TODO makros
+* DONE macros
 * TODO Include
-* LOOP GOT Global offset table
-- saved by meminit
-- Not available on empty memory
-
+* TODO stack
+* TODO call

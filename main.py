@@ -14,9 +14,6 @@ parser.add_argument("-r", "--register_address", type=int, default=0, help="Addre
 parser.add_argument("-v", "--verbose", action="store_true")
 parser.add_argument("--assemble", action="store_true", help="Assemble the program with the murbin standart. Overwrites instr_size and jump_address")
 
-#parser.add_argument("-s", "--stack", action="store_true", help="Activate stack operations like push & pop (requires pointers to be working)")
-#parser.add_argument("-f", "--func", action="store_true", help="Activate the base miv instruction and with it call & ret")
-
 args = parser.parse_args()
 
 if args.assemble:
@@ -86,18 +83,67 @@ def compile():
         if instr and instr != [] and instr != [""]:
             code.append(instr)
 
-    if args.verbose:
-        print ("Read code", code, "\n\n")
+    # if args.verbose:
+    #     print ("Read code", code, "\n\n")
+
+
     # Stage 1
     i = 0
     builtin_labels = 0
+    macros = {}
     while i < len(code):
         if code[i] == []:
             i += 1
             continue
 
         ###
-        if code[i][0].lower() == "meminit":
+        if code[i][0].lower() == "defmacro":
+            macro_name = code[i][1].replace(":", "")
+            try:
+                macro_args = code[i][2].strip()[:-1].split(",") # take the ":" at end out ("defmacro hello arg,arg2:")
+            except IndexError:
+                macro_args = ["0"]
+            macro_code = []
+
+            orig_i = i
+            i += 1
+            while code[i][0].lower() != "macro_end":
+                macro_code.append(code[i])
+                i += 1
+                if i == len(code):
+                    print("Missing 'macro_end")
+                    exit(1)
+
+
+            macros[macro_name] = (macro_args, macro_code)
+
+            del code[orig_i:i+1]
+            i = orig_i
+            continue
+        ###
+        elif code[i][0].lower() == "putmacro":
+            macro_name = code[i][1]
+            try:
+                macro_args = code[i][2].strip().split(",")
+            except IndexError:
+                macro_args = ["0"]
+
+            macro_code = macros[macro_name][1]
+            code_repl = []
+
+
+            for arg_num, repl in enumerate(macros[macro_name][0]):
+                for line in macro_code:
+                    if arg_num == 0:
+                        code_repl.append([ele.replace(repl, macro_args[0]).replace("l.", f"0L{str(builtin_labels)}L.") for ele in line])
+                    else:
+                        code_repl.append([ele.replace(repl, macro_args[arg_num]) for ele in line])
+
+            code[i:i+1] = code_repl
+            continue
+
+        ###
+        elif code[i][0].lower() == "meminit":
             if not args.assemble:
                 max_label = -1
                 asm = "mov {dest} {value}"
@@ -425,7 +471,7 @@ dec {r}
 
     # Stage 2 Linking
     if args.verbose:
-        print ("PRE-LINKING", code)
+        print ("PRE-LINKING\n", "\n".join([" ".join(j) for j in code]))
     i = 0
     instr_offset = args.jump_address
     labels = {}
