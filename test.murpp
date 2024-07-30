@@ -1,4 +1,6 @@
-meminit d0 #"hello, world\0"
+meminit d0 #"Hello, world!"
+meminit d14 #"aaa"
+meminit d18 #"G'day how are you?"
 
 defmacro puts str:
     movz 4
@@ -20,9 +22,19 @@ defmacro putln str:
 macro_end
 
 
-start:
+_start:
     inc r69
-    mov r0 5 ;; string pointer
+    mov r0 5 ;string pointer
+
+    cpy r1 r0
+    mov r2 #14 ; 14 +
+    add r1 r2  ; d0 = d14
+
+    cpy r2 r0
+    mov r3 #18 ; d18
+    add r2 r3
 
     putmacro putln r0
+    putmacro putln r1
+    putmacro putln r2
     hlt 0

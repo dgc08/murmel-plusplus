@@ -20,9 +20,9 @@
 (defconst murpp-font-lock-keywords
   (list
    ;; Keywords
-   '("\\<\\(inc\\|dec\\|jmp\\|tst\\|hlt\\|mov\\|cpy\\|jiz\\|jinz\\|jz\\|jnz\\|add\\|sub\\|mul\\|div\\|cpy\\|movz\\|cmp\\|case\\|meminit\\|int\\)\\>" . font-lock-keyword-face)
+   '("\\<\\(inc\\|dec\\|jmp\\|tst\\|hlt\\|mov\\|cpy\\|jiz\\|jinz\\|jz\\|jnz\\|add\\|sub\\|mul\\|div\\|cpy\\|movz\\|cmp\\|case\\|meminit\\|defmacro\\|putmacro\\|macro_end\\|int\\)\\>" . font-lock-keyword-face)
    ;; Registers
-   '("\\<\\(s[0-9]+\\|r[0-9]+\\|io[0-9]+\\|e[0-9]+\\|)\\>" . font-lock-variable-name-face)
+   '("\\<\\(s[0-9]+\\|r[0-9]+\\|io[0-9]+\\|e[0-9]+\\|d[0-9]+\\|)\\>" . font-lock-variable-name-face)
    ;; Labels
    '("^\\([a-zA-Z0-9_]+\\):" . font-lock-function-name-face)
    ;; Immediates

@@ -20,6 +20,7 @@ if args.assemble:
     args.instr_size = 2
     args.jump_address = 7
 
+entry_point = 0
 meminit = []
 
 max_addr = 0
@@ -67,9 +68,8 @@ def repl_registers(text):
 
     return text
 
-
-def compile():
-    with open(args.input) as f:
+def load_file(filename):
+    with open(filename) as f:
         lines = f.readlines()
 
     # Stage 0: Parse, remove comments
@@ -82,10 +82,12 @@ def compile():
         instr = line.split(";")[0].strip().replace("jz", "jiz").replace("jnz", "jinz").split(" ", 2)
         if instr and instr != [] and instr != [""]:
             code.append(instr)
+    return code
 
+def compile():
     # if args.verbose:
     #     print ("Read code", code, "\n\n")
-
+    code = load_file(args.input)
 
     # Stage 1
     i = 0
@@ -157,6 +159,8 @@ def compile():
                 if type(val) == int:
                     arr.append(str(val))
                 if type(val) == str:
+                    if len(val) > 1:
+                        val += "\0"
                     for char in val:
                         arr.append(str(ord(char)))
 
@@ -181,6 +185,8 @@ def compile():
                     # if len(expr) < 1:
                     #     form["incs"] = form.get("incs", "") + f"movz {dest}\n"
                     # if len(expr) > 1:
+                    if len(val) > 1:
+                        val += "\0"
                     for j, char in enumerate(expr):
                         form["incs"] = form.get("incs", "") + f"mov {dest}+{j} #"+ str(ord(char)) + "\n"
                     # elif len(expr) == 1:
@@ -503,6 +509,14 @@ dec {r}
 
         i +=1
 
+    global entry_point
+    try:
+        entry_point = labels["_start"]
+    except IndexError:
+        print ("Missing label '_start'")
+        exit(1)
+
+
     code_new = []
     for i in code:
         if i and i != [""]:
@@ -542,7 +556,7 @@ if __name__ == "__main__":
         inp = inp.replace("hlt ", "4\n")
         inp = inp.replace("hlt", "4\n0\n")
 
-        mem = ["7", "0", "0", "0", "0", "0", "0"]
+        mem = [str(entry_point), "0", "0", "0", "0", "0", "0"]
         mem[7:] = inp.split("\n")
 
         data_offset = len(mem)
