@@ -5,7 +5,7 @@ size_t size;
 unsigned int* ins;
 
 int segfault(char* msg) {
-  printf("Segmentation fault of emulated program: %s\n", msg);
+  fprintf(stderr, "Segmentation fault of emulated program: %s\n", msg);
   exit(EXIT_FAILURE);
 }
 
@@ -46,16 +46,21 @@ unsigned int* readFileIntoArray(const char* filename, size_t* outSize) {
     return array;
 }
 
+unsigned int* deref(unsigned int pointer) {
+  if (pointer >= size) segfault("Access to unitialised memory region");
+  return ins+pointer;
+}
+
 // All excellency of the murbin standart comes here
 void syscall() {
   //printf("syscall %u %u: ", ins[4], ins[5]);
   switch (ins[4]) {
-    case 0:
+    case 0: // putchar
       putchar(ins[5]);
       ins[5] = 0;
       ins[6] = 0;
       break;
-    case 1:
+    case 1: // getchar
       {
         int ch = getchar();
         if (ch == EOF) {
@@ -65,18 +70,16 @@ void syscall() {
         else {
           ins[6] = ch;
           ins[5] = 0;
-          break;
         }
+        break;
       }
+    case 2:
+      *deref(ins[5]) += ins[0]-1;
+      break;
   }
 
   ins[3] = 0;
   ins[4] = 0;
-}
-
-unsigned int* deref(unsigned int pointer) {
-  if (pointer >= size) segfault("Access to unitialised memory region");
-  return ins+pointer;
 }
 
 int main(int argc, char* argv[]) {

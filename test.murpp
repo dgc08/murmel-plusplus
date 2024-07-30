@@ -1,28 +1,27 @@
-; meminit d0 #"Hello, world!"
+;!MURBIN
 
-; include std.io
+meminit d0 #f"{chr(1)}Hello, world!"
+meminit d15 #f"{chr(16)}Good day, computer!"
 
-; _start:
-;     mov r0 5 ;string pointer
+include std.io
+include std.main
 
-;     push r0
-;     push r1
-;     pop r0
-;     pop r0
+world:
+    cpy r0 e1 ; move char* to d0 to r0
+    cpy r1 d0 ; copy offset lenght to d0 of string to r1
+    add r0 r1 ; add onto char*
+    putmacro putln ; just puts + print newline
+    call computer
+    ret
 
-;     putmacro putln r0
-;     hlt 0
-
-_start:
-    mov io0 #10
-    iter:
-        cpy io1 io0
-        push io1
-        dec io0
-        jnz io0 iter
-    int 1 io3
-    mov io0 #10
-    iter2:
-        pop
-        dec io0
-        jnz io0 iter2
+computer:
+    cpy r0 e1
+    cpy r1 d15
+    add r0 r1
+    putmacro putln
+    ret
+    
+main:
+    call world
+    movz r0
+    ret

@@ -84,6 +84,8 @@ def repl_registers(text):
 def load_file(filename):
     with open(filename) as f:
         lines = f.readlines()
+        if lines[0].strip() == ";!MURBIN" and not args.assemble:
+            print ("\033[91mThe file", filename, "is designed to run under the murbin standart, you are however not assembling for murbin.\nBe careful, things may break.\n\033[0m")
         lines = [line.split(";")[0].strip() for line in lines if line.split(";")[0].strip() != ""]
         lines = '\n'.join(lines)
 
@@ -91,7 +93,6 @@ def load_file(filename):
             repl_registers(lines)
             repl_registers("r7") # Make sure the stack starts at minimum r7
             lines = "mov s7 #" + str(max_addr+1) + "\n" + lines
-            print (lines) ##DEBUG
         lines = lines.split("\n")
 
     # Stage 0: Parse, remove comments
@@ -295,7 +296,39 @@ mov {value} *s7
 dec s7
 """
             form = {"value": code[i][1]}
+
         ###
+        elif code[i][0].lower() == "call" and len(code[i]) > 1:
+            max_label = -1
+            asm = """\
+inc s7
+mov *s7 #8
+cpy 5 7
+mov 4 #2
+syscall
+jmp {func}
+pop
+"""
+            form = {"func": code[i][1]}
+
+        ###
+        elif code[i][0].lower() == "syscall":
+            max_label = -1
+            asm = """\
+inc 3
+"""
+            form = {}
+
+        ###
+        elif code[i][0].lower() == "ret":
+            max_label = -1
+            asm = """\
+cpy s2 *s7
+jmp *s2
+"""
+            form = {}
+
+            ###
         elif code[i][0].lower() == "pop" and len(code[i]) == 1:
             max_label = -1
             asm = """\
@@ -444,12 +477,10 @@ jmp {to}
 
         ###
         elif code[i][0].lower() == "jinz" and code[i][2][0] != "#":
-            max_label = 0
+            max_label = -1
             asm = """\
 tst {value}
 jmp {to}
-jmp {label0}
-{label0}:
 """
             form = {"value": code[i][1], "to":code[i][2]}
 
