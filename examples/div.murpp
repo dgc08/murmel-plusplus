@@ -7,7 +7,7 @@
 
 jiz io1 divbyzero
 movz s4
-start:
+_start:
 cpy s1 io1
 sub:
 jiz io0 finish
@@ -17,7 +17,7 @@ dec io0
 jmp sub
 iter:
 inc s4
-jmp start
+jmp _start
 finish:
 jinz s1 remainder
 inc s4

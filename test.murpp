@@ -1,22 +1,28 @@
-meminit d0 #"Hello, world!"
-meminit d14 #"aaa"
-meminit d18 #"G'day how are you?"
+; meminit d0 #"Hello, world!"
 
-include std.io
+; include std.io
+
+; _start:
+;     mov r0 5 ;string pointer
+
+;     push r0
+;     push r1
+;     pop r0
+;     pop r0
+
+;     putmacro putln r0
+;     hlt 0
 
 _start:
-    inc r69
-    mov r0 5 ;string pointer
-
-    cpy r1 r0
-    mov r2 #14 ; 14 +
-    add r1 r2  ; d0 = d14
-
-    cpy r2 r0
-    mov r3 #18 ; d18
-    add r2 r3
-
-    putmacro putln r0
-    putmacro putln r1
-    putmacro putln r2
-    hlt 0
+    mov io0 #10
+    iter:
+        cpy io1 io0
+        push io1
+        dec io0
+        jnz io0 iter
+    int 1 io3
+    mov io0 #10
+    iter2:
+        pop
+        dec io0
+        jnz io0 iter2

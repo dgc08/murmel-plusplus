@@ -16,8 +16,8 @@
 
 inc io7
 movz io4,io5,io6,io7
-start:
-    jz io3 start
+_start:
+    jz io3 _start
 
     inc io7
     movz io3,io4,io5
@@ -49,7 +49,7 @@ start:
         divbyzero:
             dec io7
             int 3
-            jmp start
+            jmp _start
     halt:
         dec io2
         dec io7
@@ -58,4 +58,4 @@ start:
 
 finish:
     dec io7
-    jmp start
+    jmp _start

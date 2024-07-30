@@ -13,6 +13,7 @@ parser.add_argument("-o", "--output", type=str, default="out.mur")
 parser.add_argument("-a", "--jump_address", type=int, default=0, help="Address of the first instruction. Default: 0")
 parser.add_argument("--instr_size", type=int, default=1, help="How many 'lines' one instruction takes. Default: 1")
 parser.add_argument("-r", "--register_address", type=int, default=0, help="Address of the first register. Default: 0")
+parser.add_argument("-sz", "--stack_size", type=int, default=64, help="Size of the stack. Default: 64")
 
 parser.add_argument("-v", "--verbose", action="store_true")
 parser.add_argument("--assemble", action="store_true", help="Assemble the program with the murbin standart. Overwrites instr_size and jump_address")
@@ -25,7 +26,7 @@ args.include = set(args.include).union({path.dirname(path.abspath(__file__)) + "
 
 if args.assemble:
     args.instr_size = 2
-    args.jump_address = 7
+    args.jump_address = 8
 
 entry_point = 0
 meminit = []
@@ -40,6 +41,10 @@ io_offset = 0
 e_offset = 0
 data_offset = 0
 
+if args.assemble:
+    sp_address = "7"
+else:
+    sp_address = "s7"
 
 def repl_registers(text):
     global max_addr
@@ -54,6 +59,7 @@ def repl_registers(text):
             text = text.replace(i, str(num))
         return text
 
+    text = text.replace("s7", sp_address)
     # general purpose
     text = match(r"r\d+", "r", r_offset+global_offset, text)
     # s
@@ -68,7 +74,7 @@ def repl_registers(text):
 
     # 1+1
     matches = re.findall(r'(\d+)\+(\d+)', text)
-
+    
     for match in matches:
         sum_result = str(int(match[0]) + int(match[1]))
         text = re.sub(r'\b' + re.escape('+'.join(match)) + r'\b', sum_result, text)
@@ -78,6 +84,15 @@ def repl_registers(text):
 def load_file(filename):
     with open(filename) as f:
         lines = f.readlines()
+        lines = [line.split(";")[0].strip() for line in lines if line.split(";")[0].strip() != ""]
+        lines = '\n'.join(lines)
+
+        if re.search(r'\n\s*push', lines) and not args.assemble:
+            repl_registers(lines)
+            repl_registers("r7") # Make sure the stack starts at minimum r7
+            lines = "mov s7 #" + str(max_addr+1) + "\n" + lines
+            print (lines) ##DEBUG
+        lines = lines.split("\n")
 
     # Stage 0: Parse, remove comments
     code = []
@@ -86,7 +101,7 @@ def load_file(filename):
             print(line, ": The prefix '0L' is reserved")
             exit(1)
 
-        instr = line.split(";")[0].strip().replace("jz", "jiz").replace("jnz", "jinz").split(" ", 2)
+        instr = line.replace("jz", "jiz").replace("jnz", "jinz").split()
         if instr and instr != [] and instr != [""]:
             code.append(instr)
     return code
@@ -100,9 +115,9 @@ def find_path(path):
     exit(1)
 
 def compile():
-    # if args.verbose:
-    #     print ("Read code", code, "\n\n")
     code = load_file(args.input)
+    if args.verbose:
+        print ("Read code", code, "\n\n")
 
     # Stage 1
     i = 0
@@ -173,7 +188,7 @@ def compile():
             else:
                 global meminit
 
-                val = eval(code[i][2][1:])
+                val = eval(" ".join(code[i][2:])[1:])
                 arr = []
 
                 if type(val) == int:
@@ -197,7 +212,7 @@ def compile():
             for dest in code[i][1].split(","):
                 found = True
                 form["movzs"] = form.get("movzs", "") + f"movz {dest}\n"
-                expr = eval(code[i][2][1:])
+                expr = eval(" ".join(code[i][2:])[1:])
                 if type(expr) == int:
                     for inc in range(expr):
                         form["incs"] = form.get("incs", "") + f"inc {dest}\n"
@@ -263,6 +278,31 @@ def compile():
             if not found:
                 print("Wrong number of argumentss:", " ".join(code[i]))
                 exit(1)
+        ###
+        elif code[i][0].lower() == "push":
+            max_label = -1
+            asm = """\
+inc s7
+mov *s7 {value}
+"""
+            form = {"value": code[i][1]}
+
+        ###
+        elif code[i][0].lower() == "pop" and len(code[i]) > 1:
+            max_label = -1
+            asm = """\
+mov {value} *s7
+dec s7
+"""
+            form = {"value": code[i][1]}
+        ###
+        elif code[i][0].lower() == "pop" and len(code[i]) == 1:
+            max_label = -1
+            asm = """\
+movz *s7
+dec s7
+"""
+            form = {}
         ###
         elif code[i][0].lower() == "add" and code[i][2][0] != "#":
             max_label = 2
@@ -532,7 +572,7 @@ dec {r}
     global entry_point
     try:
         entry_point = labels["_start"]
-    except IndexError:
+    except KeyError:
         print ("Missing label '_start'")
         exit(1)
 
@@ -576,8 +616,12 @@ if __name__ == "__main__":
         inp = inp.replace("hlt ", "4\n")
         inp = inp.replace("hlt", "4\n0\n")
 
-        mem = [str(entry_point), "0", "0", "0", "0", "0", "0"]
-        mem[7:] = inp.split("\n")
+        inp = inp.split("\n")
+        if inp == [""]:
+            inp = []
+
+        mem = [str(entry_point), "0", "0", "0", "0", "0", "0", "88"]
+        mem[8:] = inp
 
         data_offset = len(mem)
         data = []
@@ -589,20 +633,23 @@ if __name__ == "__main__":
 
         global_offset = len(mem)
         mem[1] = str(global_offset)
-        mem[5] = str(data_offset)
         mem[6] = str(global_offset)
+        mem[5] = str(data_offset)
 
 
         for i in meminit:
             addr = int(repl_registers(i[0]))
             mem[addr:addr+len(i[1])] = i[1]
 
-        mem = ["0" if line == "" else repl_registers(line) for line in mem]
+        mem = [repl_registers(line) for line in mem]
+        repl_registers("r7") # Make sure the stack starts at minimum r7
 
 
+        mem[7] = str(max_addr+1)
+        mem += ["0"] * (max_addr - len(mem))
         out = "\n".join(mem)
 
-        out += '\n' + "0\n" * max_addr
+        out += '\n' + "0\n" * args.stack_size
 
         args.output += "bin"
 
