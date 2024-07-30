@@ -2,10 +2,13 @@ import argparse
 import re
 
 from sys import argv
+from os import path
+from pathlib import Path
 
 parser = argparse.ArgumentParser(description='Compiler for murmel++ assembly')
 
 parser.add_argument("input", type=str)
+parser.add_argument('-I', '--include', action='append', help='Extra include path to search for included files')
 parser.add_argument("-o", "--output", type=str, default="out.mur")
 parser.add_argument("-a", "--jump_address", type=int, default=0, help="Address of the first instruction. Default: 0")
 parser.add_argument("--instr_size", type=int, default=1, help="How many 'lines' one instruction takes. Default: 1")
@@ -15,6 +18,10 @@ parser.add_argument("-v", "--verbose", action="store_true")
 parser.add_argument("--assemble", action="store_true", help="Assemble the program with the murbin standart. Overwrites instr_size and jump_address")
 
 args = parser.parse_args()
+
+if not args.include:
+    args.include = {}
+args.include = set(args.include).union({path.dirname(path.abspath(__file__)) + "/include"})
 
 if args.assemble:
     args.instr_size = 2
@@ -84,6 +91,14 @@ def load_file(filename):
             code.append(instr)
     return code
 
+def find_path(path):
+    for directory in args.include:
+        potential_path = Path(directory) / path
+        if potential_path.exists():
+            return potential_path
+    print("Path not found")
+    exit(1)
+
 def compile():
     # if args.verbose:
     #     print ("Read code", code, "\n\n")
@@ -99,7 +114,12 @@ def compile():
             continue
 
         ###
-        if code[i][0].lower() == "defmacro":
+        if code[i][0].lower() == "include":
+            path = " ".join(code[i][1:]).replace(".", "/") + ".murpp"
+            code[i:i+1] = load_file(find_path(path))
+            continue
+        ###
+        elif code[i][0].lower() == "defmacro":
             macro_name = code[i][1].replace(":", "")
             try:
                 macro_args = code[i][2].strip()[:-1].split(",") # take the ":" at end out ("defmacro hello arg,arg2:")

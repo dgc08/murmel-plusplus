@@ -13,6 +13,8 @@
 * DONE meminit
 * DONE d0
 * DONE macros
-* TODO Include
+* DONE Include
 * TODO stack
 * TODO call
+* TODO data section
+* TODO Better file format

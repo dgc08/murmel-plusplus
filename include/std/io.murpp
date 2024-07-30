@@ -1,0 +1,18 @@
+defmacro puts str:
+    movz 4
+    cpy s1 str
+    l.start:
+        jz *str l.finish
+        cpy 5 *str
+        inc str
+        int 1 3
+        jmp l.start
+        l.finish:
+            mov str s1
+macro_end
+
+defmacro putln str:
+    putmacro puts str
+    mov 5 #"\n"
+    int 1 3
+macro_end
