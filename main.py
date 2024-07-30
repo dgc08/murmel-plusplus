@@ -123,16 +123,29 @@ def compile():
     # Stage 1
     i = 0
     builtin_labels = 0
+    scope = 0
     macros = {}
+    included = []
     while i < len(code):
         if code[i] == []:
             i += 1
             continue
+        code[i] = [s.replace("l.", f"0L{str(scope)}L.") for s in code[i]]
 
         ###
-        if code[i][0].lower() == "include":
+        if code[i][0].lower() == "scope":
+            scope += 1
+            del code[i]
+            continue
+        ###
+        elif code[i][0].lower() == "include":
             path = " ".join(code[i][1:]).replace(".", "/") + ".murpp"
-            code[i:i+1] = load_file(find_path(path))
+            path = find_path(path)
+            if path in included:
+                del code[i]
+            else:
+                included.append(path)
+                code[i:i+1] = load_file(path)
             continue
         ###
         elif code[i][0].lower() == "defmacro":
@@ -576,7 +589,11 @@ dec {r}
         if code[i] == []:
             pass
         elif code[i][0].endswith(":"):
-            labels[code[i][0].replace(":", "")] = instr_offset
+            name = code[i][0].replace(":", "")
+            if name in labels.keys():
+                print("Double definition of label", name)
+                exit(1)
+            labels[name] = instr_offset
             code[i] = None
         else:
             instr_offset += args.instr_size

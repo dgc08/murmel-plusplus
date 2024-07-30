@@ -15,7 +15,8 @@
 * DONE d0
 * DONE macros
 * DONE Include
-* TODO stack
-* TODO call
+* DONE stack
+* DONE call
 * TODO data section
+* TODO stdlib
 * TODO Better file format

@@ -3,8 +3,8 @@
 meminit d0 #f"{chr(1)}Hello, world!"
 meminit d15 #f"{chr(16)}Good day, computer!"
 
-include std.io
 include std.main
+include std.io
 
 world:
     cpy r0 e1 ; move char* to d0 to r0
@@ -20,7 +20,7 @@ computer:
     add r0 r1
     putmacro putln
     ret
-    
+
 main:
     call world
     movz r0

@@ -1,9 +1,9 @@
 meminit d0 #"Hello, world!"
 
 include std.io
+include std.main
 
-_start:
-    inc r69
-    mov r0 5 ; 5 contains the adress of d0
+main:
+    cpy r0 e1 ; e1 contains pointer to d0 (look at std.main)
     putmacro putln r0
     hlt 0

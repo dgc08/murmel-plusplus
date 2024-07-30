@@ -8,6 +8,7 @@ defmacro putln:
 macro_end
 
 puts:
+scope
     movz 4
     cpy s1 r0
     l.start:
