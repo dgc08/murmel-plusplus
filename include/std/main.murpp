@@ -4,7 +4,7 @@
 _start:
     mov e0 6 ; pointer to e0
     mov e1 5 ; pointer to d0
-    mov e2 4 ; pointer to heap
+    cpy e2 4 ; pointer to heap
     mov e3 4 ; pointer to heap
   
     call main

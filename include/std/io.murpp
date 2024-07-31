@@ -10,15 +10,18 @@ defmacro putchar char:
     syscall
 macro_end
 
-defmacro putln:
+putln:
     call puts
     putmacro putchar STD.endl
+
+defmacro println str:
+    cpy r0 str
+    call putln
 macro_end
 
 scope
 puts:
     movz 4
-    cpy s1 r0
     l.start:
         jz *r0 l.finish
         cpy 5 *r0
@@ -26,5 +29,4 @@ puts:
         syscall
         jmp l.start
     l.finish:
-        mov r0 s1
         ret

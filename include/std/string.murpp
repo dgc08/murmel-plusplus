@@ -1,0 +1,17 @@
+;!MURBIN
+
+scope
+strcpy:
+    ; r0: destination address
+    ; r3: string to copy
+    mov r2 r0
+    mov r3 r1
+    l.start:
+        cpy *r2 *r3
+        jz *r3 l.finish
+        inc r2
+        inc r3
+        jmp l.start
+    l.finish:
+        mov r0 r3
+        ret

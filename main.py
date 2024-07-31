@@ -304,7 +304,8 @@ dec s7
         elif code[i][0].lower() == "call" and len(code[i]) > 1:
             max_label = 0
             asm = """\
-push ${label0}
+cpy s1 ${label0}
+push s1
 jmp {func}
 ${label0}:
 """
@@ -434,7 +435,6 @@ inc {dest}
 movz s5
 jmp {label5}
 {label6}:
-mov io6 #3
 hlt 3
 {label4}:
 mov s5 s1
@@ -637,11 +637,13 @@ dec {r}
                 target = 0
             code[i][target] = str(labels[code[i][target]])
         except KeyError:
-            if target != 0 and code[i][0] == "jmp" and not code[i][1].startswith("*"):
-                print("Unrecognized label", code[i][1])
-                exit(1)
-            elif "$"+code[i][target] in labels.keys():
+            if "$"+code[i][target] in labels.keys():
                 code[i][target] = str(meminit[int(labels["$"+code[i][target]][1:])])
+            elif code[i][target].isnumeric() or (len(code[i][target]) > 1 and code[i][target][1:].isnumeric()):
+                pass
+            else:
+                print("Unrecognized label", code[i][target])
+                exit(1)
 
         i +=1
 
@@ -707,6 +709,8 @@ if __name__ == "__main__":
         mem[4] = str(len(mem))
         mem += ["0"] * (args.heap_size)
 
+
+        [int(i) for i in mem] # check if everything is a number user if something errrors here it's your fault
 
         out = "\n".join(mem)
 

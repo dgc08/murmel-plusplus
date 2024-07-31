@@ -3,9 +3,11 @@
 
 size_t size;
 unsigned int* ins;
+unsigned int PC;
 
 int segfault(char* msg) {
   fprintf(stderr, "Segmentation fault of emulated program: %s\n", msg);
+  printf("%u: %u, %u\n",PC-1, ins[PC-1], ins[PC]);
   exit(EXIT_FAILURE);
 }
 
@@ -88,56 +90,58 @@ int main(int argc, char* argv[]) {
     const char* filename = argv[1];
     ins = readFileIntoArray(filename, &size);
 
-    while (ins[0] < size-1) {
-      unsigned int instr = ins[ins[0]];
-      ins[0]++;
-      /* printf("%u: %u, %u\n",ins[0]-1, instr, ins[ins[0]]); */
+    PC = ins[0];
+
+    while (PC < size-1) {
+      unsigned int instr = ins[PC];
+      PC++;
+      /* printf("%u: %u, %u\n",PC-1, instr, ins[PC]); */
       switch (instr) {
         case 0:
           {
-            unsigned int* p = deref(ins[ins[0]]) ;
+            unsigned int* p = deref(ins[PC]) ;
             (*p)++;
             if (p-ins == 3) syscall();
           }
           break;
         case 1:
-          (*deref(ins[ins[0]]))--;
+          (*deref(ins[PC]))--;
           break;
         case 2:
-          ins[0] = ins[ins[0]];
+          PC = ins[PC];
           continue;
         case 3:
-          if (*deref((ins[ins[0]]))  == 0) {
-            ins[0]+=2;
+          if (*deref((ins[PC]))  == 0) {
+            PC+=2;
           }
           break;
         case 4:
-          exit(ins[ins[0]]);
+          exit(ins[PC]);
         case 5:
           {
-            unsigned int* p = deref(*deref(ins[ins[0]]));
+            unsigned int* p = deref(*deref(ins[PC]));
             (*p)++;
             if (p-ins == 3) syscall();
           }
           break;
         case 6:
-          (*deref(*deref(ins[ins[0]])))--;
+          (*deref(*deref(ins[PC])))--;
           break;
         case 7:
-          ins[0] = *deref(ins[ins[0]]);
+          PC = *deref(ins[PC]);
           continue;
         case 8:
-          if (*deref(*deref((ins[ins[0]]))) == 0) {
-            ins[0]+=2;
+          if (*deref(*deref((ins[PC]))) == 0) {
+            PC+=2;
           }
           break;
         case 9:
-          exit(*deref(ins[ins[0]]));
+          exit(*deref(ins[PC]));
           break;
         default:
           segfault("Unrecognised instruction");
       }
-      ins[0]++;
+      PC++;
     }
     segfault("No hlt called");
 }
