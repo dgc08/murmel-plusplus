@@ -1,0 +1,48 @@
+;!MURBIN
+
+;; Try this first without the `-lib` flag and the `_start` not commented.
+;; Then, try it with `-lib` and with the `_start` label commented (because std.main defines it for us)
+
+;;_start: ;; if compiled with stdlib just comment that out
+     mov e3 4
+     call main
+     hlt *r0
+
+include std.string
+include std.io
+
+$msg1:
+    #"This will cause a stack overflow \n\n"
+$msg2:
+    #"Stack Overflow done."
+$msg_for_heap:
+    #"One level deeper in the recursion. This sring lies in extra memory."
+
+; some filler data to set the offsets just right and make the demostration more interesting
+#"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+h_str:
+    0
+main:
+    putmacro println $msg1
+    cpy r0 e3 ; heap pointer (look at _start)
+    cpy r1 $msg_for_heap
+    call strcpy ; copy r1 ($msg_for_heap) to the heap
+    mov h_str e3 ; let h_str point to the heap
+    mov e3 r0
+    call stackoverflow
+    movz r0 ; return 0
+    ret
+
+scope
+l.iterations:
+    200
+stackoverflow:
+    dec l.iterations
+    putmacro println h_str
+    jnz l.iterations l.next
+    putmacro println $msg2
+    ret
+    l.next:
+        call stackoverflow
+        putmacro println h_str
+        ret

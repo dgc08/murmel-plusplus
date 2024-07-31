@@ -12,44 +12,21 @@ $msg1:
     #"Hello, world!"
 $msg2:
     #"Hello, computer!"
-$msg3:
-    #"Stack done."
-$msg4:
-    #"iter in stack."
-$msg_for_heap:
-    #"This in extra memory"
-
-$heap:
-    #"Ez winner chicken dinner"
 
 h_str:
     0
 main:
-    ;call world
-    cpy r0 e3
-    cpy r1 $msg_for_heap
-    call strcpy
-    ;call print_int
-    mov h_str e3
-    mov e3 r0
-    putmacro println h_str
-    call stackoverflow
+    call world
+    ; cpy r0 e3
+    ; cpy r1 $msg_for_heap
+    ; call strcpy
+    ; ;call print_int
+    ; mov h_str e3
+    ; mov e3 r0
+    ; putmacro println h_str
+    ; call stackoverflow
     movz r0
     ret
-
-scope
-l.iterations:
-    200
-stackoverflow:
-    dec l.iterations
-    putmacro println h_str
-    jnz l.iterations l.next
-    putmacro println $msg3
-    ret
-    l.next:
-        call stackoverflow
-        putmacro println h_str
-        ret
 
 world:
     cpy r0 $msg1
