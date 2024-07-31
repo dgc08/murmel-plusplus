@@ -73,9 +73,6 @@ void syscall() {
         }
         break;
       }
-    case 2:
-      *deref(ins[5]) += ins[0]-1;
-      break;
   }
 
   ins[3] = 0;

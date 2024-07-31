@@ -17,6 +17,6 @@
 * DONE Include
 * DONE stack
 * DONE call
-* TODO data section
+* DONE data section
 * TODO stdlib
 * TODO Better file format

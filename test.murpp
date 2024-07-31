@@ -6,7 +6,7 @@ include std.io
 $msg1:
     #"Hello, world!"
 $msg2:
-    #"Good day, computer!"
+    #"Hello, computer!"
 
 _start:
     ; mov r0 $msg

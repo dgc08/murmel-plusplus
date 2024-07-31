@@ -1,14 +1,22 @@
 ;!MURBIN
 ; std.io
+$STD.endl: ; endl "\n"
+    10
+    0
 
-defmacro putln:
-    call puts
-    mov 5 #"\n"
+defmacro putchar char:
+    movz 4
+    cpy 5 char
     syscall
 macro_end
 
-puts:
+defmacro putln:
+    call puts
+    putmacro putchar *$STD.endl
+macro_end
+
 scope
+puts:
     movz 4
     cpy s1 r0
     l.start:

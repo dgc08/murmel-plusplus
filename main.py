@@ -301,32 +301,28 @@ dec s7
 
         ###
         elif code[i][0].lower() == "call" and len(code[i]) > 1:
-            max_label = -1
+            max_label = 0
             asm = """\
-inc s7
-mov *s7 #8
-cpy 5 7
-mov 4 #2
-syscall
+push ${label0}
 jmp {func}
-pop
+${label0}:
 """
             form = {"func": code[i][1]}
+
+        ###
+        elif code[i][0].lower() == "ret":
+            max_label = -1
+            asm = """\
+pop s2
+jmp *s2
+"""
+            form = {}
 
         ###
         elif code[i][0].lower() == "syscall":
             max_label = -1
             asm = """\
 inc 3
-"""
-            form = {}
-
-        ###
-        elif code[i][0].lower() == "ret":
-            max_label = -1
-            asm = """\
-cpy s2 *s7
-jmp *s2
 """
             form = {}
 
