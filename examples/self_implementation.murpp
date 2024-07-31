@@ -10,9 +10,8 @@
 ;; e0 is ip
 ;; e1 & e2 is temp storage
 ;; user program/memory starts at (e)3, program and the registers/the stack lie in the same memory.
-;; Make sure to account for the space for e0, e1 and e2 while setting offsets in mem
 
-;; Instruction format: first register is opcode, next register is argument. `hlt` takes 0 as argument
+;; Instruction format: first register is opcode, next register is argument. `hlt` takes 0 as argument (or anything you want really; in murbin it is the exit code of the emulator)
 
 ;; Opcodes:
 ;; 0: inc
