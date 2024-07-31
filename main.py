@@ -25,7 +25,6 @@ if not args.include:
 args.include = set(args.include).union({path.dirname(path.abspath(__file__)) + "/include"})
 
 if args.assemble:
-    args.instr_size = 2
     args.jump_address = 8
 
 entry_point = 0
@@ -115,6 +114,19 @@ def find_path(path):
     print("Path not found")
     exit(1)
 
+def immediate_to_array(immediate):
+    val = eval(immediate)
+    arr = []
+
+    if type(val) == int:
+        arr.append(str(val))
+    if type(val) == str:
+        if len(val) > 1:
+            val += "\0"
+        for char in val:
+            arr.append(str(ord(char)))
+    return arr
+
 def compile():
     code = load_file(args.input)
     if args.verbose:
@@ -132,7 +144,7 @@ def compile():
             continue
         code[i] = [s.replace("l.", f"0L{str(scope)}L.") for s in code[i]]
 
-        ###
+        ####
         if code[i][0].lower() == "scope":
             scope += 1
             del code[i]
@@ -194,29 +206,6 @@ def compile():
             continue
 
         ###
-        elif code[i][0].lower() == "meminit":
-            if not args.assemble:
-                max_label = -1
-                asm = "mov {dest} {value}"
-                form = {"dest": code[i][1], "value": code[i][2]}
-            else:
-                global meminit
-
-                val = eval(" ".join(code[i][2:])[1:])
-                arr = []
-
-                if type(val) == int:
-                    arr.append(str(val))
-                if type(val) == str:
-                    if len(val) > 1:
-                        val += "\0"
-                    for char in val:
-                        arr.append(str(ord(char)))
-
-                meminit.append((code[i][1], arr))
-                del code[i]
-                continue
-        ###
         elif code[i][0].lower() == "mov" and code[i][2][0] == "#":
             max_label = -1
             asm = "{movzs}\n{incs}"
@@ -234,8 +223,8 @@ def compile():
                     # if len(expr) < 1:
                     #     form["incs"] = form.get("incs", "") + f"movz {dest}\n"
                     # if len(expr) > 1:
-                    if len(val) > 1:
-                        val += "\0"
+                    if len(expr) > 1:
+                        expr += "\0"
                     for j, char in enumerate(expr):
                         form["incs"] = form.get("incs", "") + f"mov {dest}+{j} #"+ str(ord(char)) + "\n"
                     # elif len(expr) == 1:
@@ -551,6 +540,39 @@ dec {r}
             if len(code[i]) > 3:
                 asm += "inc {r}\n" + f"jmp {code[i][3]}\n"
 
+        ###
+        elif args.assemble and code[i][0].startswith("#"): # inline data
+            extra_data = immediate_to_array(" ".join(code[i])[1:])
+            code[i:i+1] = [[j] for j in extra_data]
+            i += 1
+            continue
+        ####
+        elif args.assemble:
+            line = " ".join(code[i])
+            line = line.replace("inc *", "5\n")
+            line = line.replace("dec *", "6\n")
+            line = line.replace("jmp *", "7\n")
+            line = line.replace("tst *", "8\n")
+
+            line = line.replace("inc ", "0\n")
+            line = line.replace("dec ", "1\n")
+            line = line.replace("jmp ", "2\n")
+            line = line.replace("tst ", "3\n")
+
+            line = line.replace("hlt *", "9\n")
+            
+            line = line.replace("hlt\n", "4\n0\n")
+            line = line.replace("hlt \n", "4\n0\n")
+            line = line.replace("hlt ", "4\n")
+            line = line.replace("hlt", "4\n0\n")
+
+            lines = line.split("\n")
+            if len(lines) > 1:
+                lines = [line.strip().split(" ") for line in lines]
+                code[i:i+1] = lines
+
+            i += 1
+            continue
         ####
         else:
             i += 1
@@ -559,7 +581,7 @@ dec {r}
         try:
             form
         except NameError:
-            print("NameError")
+            print("no form")
             i += 1
             continue
         
@@ -585,15 +607,24 @@ dec {r}
     i = 0
     instr_offset = args.jump_address
     labels = {}
+    data_index = 0
     while i < len(code):
         if code[i] == []:
             pass
         elif code[i][0].endswith(":"):
             name = code[i][0].replace(":", "")
+
             if name in labels.keys():
-                print("Double definition of label", name)
+                print("Double definition of memory reference", name)
                 exit(1)
-            labels[name] = instr_offset
+            if name.startswith("$"):
+                global meminit
+                meminit.append(str(instr_offset))
+                labels[name] = "d"+str(data_index)
+                data_index += 1
+            else:
+                labels[name] = instr_offset
+
             code[i] = None
         else:
             instr_offset += args.instr_size
@@ -603,17 +634,15 @@ dec {r}
         if code[i] == [] or code[i] is None:
             i += 1
             continue
-        if code[i][0].endswith(":"):
-            continue
-        if code[i][0] == "jmp":
-            if code[i][1][0] == "*" or code[i][1].isdigit():
-                pass
-            else:
-                try:
-                    code[i][1] = str(labels[code[i][1].replace("$", "")])
-                except KeyError:
-                    print("Unrecognized label", code[i][1])
-                    exit(1)
+        try:
+            target = 1
+            if len(code[i]) == 1:
+                target = 0
+            code[i][target] = str(labels[code[i][target]])
+        except KeyError:
+            if target != 0 and code[i][0] == "jmp" and not code[i][1].startswith("*"):
+                print("Unrecognized label", code[i][1])
+                exit(1)
 
         i +=1
 
@@ -647,48 +676,26 @@ if __name__ == "__main__":
     else:
         inp = compile()
 
-        inp = inp.replace("inc *", "5\n")
-        inp = inp.replace("dec *", "6\n")
-        inp = inp.replace("jmp *", "7\n")
-        inp = inp.replace("tst *", "8\n")
-
-        inp = inp.replace("inc ", "0\n")
-        inp = inp.replace("dec ", "1\n")
-        inp = inp.replace("jmp ", "2\n")
-        inp = inp.replace("tst ", "3\n")
-
-        inp = inp.replace("hlt *", "9\n")
-
-        inp = inp.replace("hlt\n", "4\n0\n")
-        inp = inp.replace("hlt \n", "4\n0\n")
-        inp = inp.replace("hlt ", "4\n")
-        inp = inp.replace("hlt", "4\n0\n")
-
         inp = inp.split("\n")
         if inp == [""]:
             inp = []
 
-        mem = [str(entry_point), "0", "0", "0", "0", "0", "0", "88"]
+        mem = [str(entry_point), "0", "0", "0", "0", "0", "0", "0"]
         mem[8:] = inp
 
         data_offset = len(mem)
-        data = []
-        for i in meminit:
-            if i[0].startswith("d"):
-                addr = int(i[0][1:])
-                data[addr:addr+len(i[1])] = i[1]
-        mem += data
+        # data = []
+        # for i in meminit:
+        #     if i[0].startswith("d"):
+        #         addr = int(i[0][1:])
+        #         data[addr:addr+len(i[1])] = i[1]
+        mem += meminit
 
         global_offset = len(mem)
         mem[1] = str(global_offset)
         mem[6] = str(global_offset)
         mem[5] = str(data_offset)
-
-
-        for i in meminit:
-            addr = int(repl_registers(i[0]))
-            mem[addr:addr+len(i[1])] = i[1]
-
+        
         mem = [repl_registers(line) for line in mem]
         repl_registers("r7") # Make sure the stack starts at minimum r7
 

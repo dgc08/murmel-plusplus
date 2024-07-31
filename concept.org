@@ -1,5 +1,5 @@
 * Murbin
-0: ip
+0: pc
 1: -
 2: -
 3: interrupt/syscall signal to emulator / OS

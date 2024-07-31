@@ -28,7 +28,7 @@
      . font-lock-keyword-face)
 
     ;; Macro and control keywords
-    ("\\<\\(case\\|meminit\\|defmacro\\|putmacro\\|macro_end\\|include\\|push\\|pop\\|call\\|ret\\|syscall\\|scope\\|int\\)\\>"
+    ("\\<\\(case\\|defmacro\\|putmacro\\|macro_end\\|include\\|push\\|pop\\|call\\|ret\\|syscall\\|scope\\|int\\)\\>"
      . font-lock-keyword-face)
 
     ;; Registers

@@ -1,9 +1,10 @@
-meminit d0 #"Hello, world!"
-
 include std.io
-include std.main
+;include std.main
 
-main:
-    cpy r0 e1 ; e1 contains pointer to d0 (look at std.main)
+_start:
+    mov r0 $msg
     putmacro putln r0
     hlt 0
+
+$msg:
+    #"Hello, World!"
