@@ -13,7 +13,8 @@ parser.add_argument("-o", "--output", type=str, default="out.mur")
 parser.add_argument("-a", "--jump_address", type=int, default=0, help="Address of the first instruction. Default: 0")
 parser.add_argument("--instr_size", type=int, default=1, help="How many 'lines' one instruction takes. Default: 1")
 parser.add_argument("-r", "--register_address", type=int, default=0, help="Address of the first register. Default: 0")
-parser.add_argument("-sz", "--stack_size", type=int, default=64, help="Size of the stack. Default: 64")
+parser.add_argument("-sz", "--stack_size", type=int, default=128, help="Size of the stack. Default: 128")
+parser.add_argument("-hz", "--heap_size", type=int, default=256, help="Size of the extra memory on top. Default: 256")
 
 parser.add_argument("-v", "--verbose", action="store_true")
 parser.add_argument("--assemble", action="store_true", help="Assemble the program with the murbin standart. Overwrites instr_size and jump_address")
@@ -639,6 +640,8 @@ dec {r}
             if target != 0 and code[i][0] == "jmp" and not code[i][1].startswith("*"):
                 print("Unrecognized label", code[i][1])
                 exit(1)
+            elif "$"+code[i][target] in labels.keys():
+                code[i][target] = str(meminit[int(labels["$"+code[i][target]][1:])])
 
         i +=1
 
@@ -696,11 +699,16 @@ if __name__ == "__main__":
         repl_registers("r7") # Make sure the stack starts at minimum r7
 
 
-        mem[7] = str(max_addr+1)
         mem += ["0"] * (max_addr - len(mem))
-        out = "\n".join(mem)
 
-        out += '\n' + "0\n" * args.stack_size
+        mem[7] = str(max_addr+1)
+        mem += ["0"] * (args.stack_size)
+
+        mem[4] = str(len(mem))
+        mem += ["0"] * (args.heap_size)
+
+
+        out = "\n".join(mem)
 
         args.output += "bin"
 

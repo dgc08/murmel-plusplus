@@ -12,7 +12,7 @@ macro_end
 
 defmacro putln:
     call puts
-    putmacro putchar *$STD.endl
+    putmacro putchar STD.endl
 macro_end
 
 scope
