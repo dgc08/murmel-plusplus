@@ -1,6 +1,9 @@
 ;; Efficient multiplier
 ;; Longer than the one you'd usually write, but ~2x faster
-;; It just runs one extra iteration while moving 32 back to r1
+;; It just runs one extra iteration while moving r2 back to r1
+
+jmp 1 ; jmp to 1 because this is legacy code with 1 indexing
+
 tst 0
 
 jmp 4
