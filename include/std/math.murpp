@@ -1,0 +1,33 @@
+;!MURBIN
+
+; std.math
+
+scope
+math.div:
+    ; call div as function because div is really instruction-heavy
+    ; r0 is op1 r1 op2
+    jiz r1 l.divbyzero
+    movz s2
+    l.start:
+        jiz r0 l.no_remain
+        cpy s1 r1
+    l.iter:
+        jiz s1 l.next
+        jiz r0 l.remain
+        dec r0
+        dec s1
+        jmp l.iter
+    l.next:
+        inc s2
+        jmp l.start
+    l.remain:
+        sub r1 s1
+        jmp l.end
+    l.no_remain:
+        movz r1
+        jmp l.end
+    l.divbyzero:
+        hlt 3 ; for now, I should introduce some graceful error handling
+    l.end:
+        mov r0 s2
+        ret

@@ -48,7 +48,7 @@ _start:
         jmp finish
         divbyzero:
             dec io7
-            int 3
+            int 3 io6
             jmp _start
     halt:
         dec io2

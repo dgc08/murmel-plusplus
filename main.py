@@ -429,30 +429,31 @@ movz {op1}
         elif code[i][0].lower() == "div" and code[i][2][0] != "#":
             max_label = 6
             asm = """\
-jiz {op1} {label6}
-movz {dest}
+jiz {op1} {label5}
+movz s2
 {label0}:
+jiz {op0} {label4}
 cpy s1 {op1}
 {label1}:
-jiz {op0} {label3}
 jiz s1 {label2}
-dec s1
+jiz {op0} {label3}
 dec {op0}
+dec s1
 jmp {label1}
 {label2}:
-inc {dest}
+inc s2
 jmp {label0}
 {label3}:
-jinz s1 {label4}
-inc {dest}
-movz s5
-jmp {label5}
-{label6}:
-hlt 3
+sub {op1} s1
+mov s5 {op1}
+jmp {label6}
 {label4}:
-mov s5 s1
-{label5}:
 movz {op1}
+jmp {label6}
+{label5}:
+hlt 3
+{label6}:
+mov {dest} s2
 """
             form = {"dest":code[i][1], "op0": code[i][2], "op1":code[i][3]}
 
