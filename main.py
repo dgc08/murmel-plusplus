@@ -15,11 +15,15 @@ parser.add_argument("--instr_size", type=int, default=1, help="How many 'lines' 
 parser.add_argument("-r", "--register_address", type=int, default=0, help="Address of the first register. Default: 0")
 parser.add_argument("-sz", "--stack_size", type=int, default=128, help="Size of the stack. Default: 128")
 parser.add_argument("-hz", "--heap_size", type=int, default=256, help="Size of the extra memory on top. Default: 256")
+#parser.add_argument("-nl", "--no_stdlib", action="store_true")
+parser.add_argument("-lib", "--use_stdlib", action="store_true", help="Use stdlib (std.main) with stack protector and extra features")
 
 parser.add_argument("-v", "--verbose", action="store_true")
 parser.add_argument("--assemble", action="store_true", help="Assemble the program with the murbin standart. Overwrites instr_size and jump_address")
 
 args = parser.parse_args()
+
+args.no_stdlib = not args.use_stdlib
 
 if not args.include:
     args.include = {}
@@ -132,6 +136,11 @@ def compile():
     code = load_file(args.input)
     if args.verbose:
         print ("Read code", code, "\n\n")
+
+    if args.no_stdlib:
+        pass
+    else:
+        code.insert(0, ["include", "std.main"])
 
     # Stage 1
     i = 0
@@ -285,11 +294,15 @@ def compile():
         ###
         elif code[i][0].lower() == "push":
             max_label = -1
+            if not args.no_stdlib:
+                extra = "\njinz h0 STD.stack_overflown"
+            else:
+                extra = ""
             asm = """\
 inc s7
-mov *s7 {value}
+mov *s7 {value}{extra}
 """
-            form = {"value": code[i][1]}
+            form = {"value": code[i][1], "extra": extra}
 
         ###
         elif code[i][0].lower() == "pop" and len(code[i]) > 1:
@@ -639,7 +652,9 @@ dec {r}
         except KeyError:
             if "$"+code[i][target] in labels.keys():
                 code[i][target] = str(meminit[int(labels["$"+code[i][target]][1:])])
-            elif code[i][target].isnumeric() or (len(code[i][target]) > 1 and code[i][target][1:].isnumeric()):
+            elif code[i][target].isnumeric() or (len(code[i][target]) > 1 and (code[i][target][1:].isnumeric() or code[i][target][2].isnumeric())):
+                pass
+            elif code[i][0] in ["inc", "dec", "tst", "hlt"]:
                 pass
             else:
                 print("Unrecognized label", code[i][target])
@@ -706,14 +721,21 @@ if __name__ == "__main__":
         mem[7] = str(max_addr+1)
         mem += ["0"] * (args.stack_size)
 
-        mem[4] = str(len(mem))
-        mem += ["0"] * (args.heap_size)
+        # one extra before heap is stack canary
+        mem[4] = str(len(mem)+1)
+        mem += ["0"] * (args.heap_size+1)
 
+        new_mem = []
+        for i in mem:
+            if i != "h0":
+                new_mem.append(i)
+            else:
+                new_mem.append(str(int(mem[4])-1))
 
-        [int(i) for i in mem] # check if everything is a number user if something errrors here it's your fault
+        out = "\n".join(new_mem)
 
-        out = "\n".join(mem)
-
+        [int(i) for i in new_mem] # check if everything is a number. user if something errors here it's your fault
+        
         args.output += "bin"
 
     with open(args.output, "w") as f:

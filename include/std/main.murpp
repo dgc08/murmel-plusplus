@@ -1,11 +1,26 @@
 ;!MURBIN
 ; std.main
+;
+include std.io
 
 _start:
     mov e0 6 ; pointer to e0
     mov e1 5 ; pointer to d0
     cpy e2 4 ; pointer to heap
     mov e3 4 ; pointer to heap
-  
+
     call main
     hlt *r0
+
+scope
+$l.stackoverflow:
+    #"Stack/Heap Corrupted: Stack Overflow"
+STD.stack_overflown:
+    ; stack canary is dead, we want to quit and not
+
+    ; the println macro needs two calls until the text is on the screen, make room for 3
+    pop ; pop the murder of the canary
+    pop
+    pop
+    putmacro println $l.stackoverflow
+    hlt 1

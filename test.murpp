@@ -1,8 +1,12 @@
 ;!MURBIN
 
-include std.main
-include std.io
+_start: ;; if compiled with stdlib just comment that out
+    mov e3 4
+    call main
+    hlt *r0
+
 include std.string
+include std.io
 
 $msg1:
     #"Hello, world!"
@@ -13,7 +17,7 @@ $msg3:
 $msg4:
     #"iter in stack."
 $msg_for_heap:
-    #"This in heap"
+    #"This in extra memory"
 
 $heap:
     #"Ez winner chicken dinner"
@@ -35,7 +39,7 @@ main:
 
 scope
 l.iterations:
-    180
+    200
 stackoverflow:
     dec l.iterations
     putmacro println h_str
