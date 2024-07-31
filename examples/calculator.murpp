@@ -1,6 +1,8 @@
 ;; AUTHOR: Sinthoras39
 ;; Calculator
 ;;
+;; YOU NEED THE COMPILED VERSION. You can find the assembly in calculator.mur
+;;
 ;; Start program before entering your input. If your calculation is finished, io7 will become empty and you can enter the next calculation
 ;;
 ;; io0: op0
