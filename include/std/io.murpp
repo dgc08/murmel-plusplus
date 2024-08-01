@@ -3,7 +3,7 @@
 
 include std.math
 
-$STD.endl: ; endl "\n"
+$std.endl: ; endl "\n"
     10
     0
 
@@ -14,7 +14,7 @@ macro_end
 
 putln:
     call puts
-    putmacro putchar STD.endl
+    putmacro putchar std.endl
 
 defmacro println str:
     cpy r0 str
@@ -31,6 +31,47 @@ puts:
         syscall
         jmp l.start
     l.finish:
+        ret
+
+scope
+l.no_limit:
+    0
+l.strp:
+    0
+getline:
+    ; char* l.strp location
+    ; u r1 limit
+    ;
+    ; If limit is 0, no limit
+    mov l.strp r0
+
+    jz r1 l.set_no_limit
+       movz l.no_limit
+       dec r1
+       jmp l.start
+    l.set_no_limit:
+        inc l.no_limit
+
+    l.start:
+        mov 4 #1
+        syscall
+        jnz 5 l.end
+
+        cpy s1 6
+        cpy s2 std.endl
+        cmp s1 s2
+        jz s4 l.end
+
+
+        mov *l.strp 6
+        inc l.strp
+        jnz l.no_limit l.start
+        dec r1
+        jz r1 l.end
+        jmp l.start
+    l.end:
+        movz *l.strp
+        mov r0 l.strp
         ret
 
 scope

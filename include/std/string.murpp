@@ -34,8 +34,6 @@ l.num_base:
     10
 l.num_offset:
     #"0"
-$l.iter:
-    #"iter"
 l.stp:
     0
 l.accu:

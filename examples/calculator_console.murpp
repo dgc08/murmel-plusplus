@@ -1,5 +1,8 @@
 ;!MURBIN
 
+;; This is for murbin, not plain assembly
+;; --assemble flag of main.py and binary-emulator/ are needed
+
 _start: ;; if compiled with stdlib just comment that out
     mov e3 4
     cpy e1 e3

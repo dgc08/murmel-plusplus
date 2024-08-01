@@ -350,7 +350,7 @@ dec s7
 """
             form = {}
         ###
-        elif code[i][0].lower() == "add" and code[i][2][0] != "#":
+        elif code[i][0].lower() == "add" and len(code[i]) > 1 and code[i][2][0] != "#":
             max_label = 2
             asm = """\
 {label0}:
@@ -373,7 +373,7 @@ dec s7
                 exit(1)
 
         ###
-        elif code[i][0].lower() == "sub" and code[i][2][0] != "#":
+        elif code[i][0].lower() == "sub" and len(code[i]) > 1 and code[i][2][0] != "#":
             max_label = 3
             asm = """\
 movz s5
@@ -396,7 +396,7 @@ jmp {label2}
 
 
         ###
-        elif code[i][0].lower() == "mul":
+        elif code[i][0].lower() == "mul" and len(code[i]) > 1 :
             max_label = 4
             asm = """\
 movz s0
@@ -426,7 +426,7 @@ movz {op1}
 
 
         ###
-        elif code[i][0].lower() == "div" and code[i][2][0] != "#":
+        elif code[i][0].lower() == "div" and len(code[i]) > 1 and code[i][2][0] != "#":
             max_label = 6
             asm = """\
 jz {op1} {label5}
