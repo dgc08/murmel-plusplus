@@ -2,26 +2,42 @@
 
 ; std.math
 
+jmp _start
+
 scope
 math.div:
     ; call div as function because div is really instruction-heavy
+    ; this is an implementation of fast-divider, so faster than the div instruction which aims to be compact
+    ; use this for ~2x the speed of the div instruction
+    ;
+    ; Works only as function (murbin)
+    ;
     ; r0 is op1 r1 op2
-    jiz r1 l.divbyzero
-    movz s2
+    jz r1 l.divbyzero
+    movz s2,s1
     l.start:
-        jiz r0 l.no_remain
-        cpy s1 r1
-    l.iter:
-        jiz s1 l.next
-        jiz r0 l.remain
+        jz r0 l.no_remain
+    l.iter1: ; op2 in r1
+        jz r1 l.to_iter2
+        jz r0 l.remain
+        dec r0
+        dec r1
+        inc s1
+        jmp l.iter1
+    l.to_iter2:
+        inc s2
+    l.iter2: ; op2 in s1
+        jz s1 l.next
+        jz r0 l.end
         dec r0
         dec s1
-        jmp l.iter
+        inc r1
+        jmp l.iter2
     l.next:
         inc s2
         jmp l.start
     l.remain:
-        sub r1 s1
+        mov r1 s1
         jmp l.end
     l.no_remain:
         movz r1
@@ -30,4 +46,33 @@ math.div:
         hlt 3 ; for now, I should introduce some graceful error handling
     l.end:
         mov r0 s2
+        ret
+
+scope
+math.mul:
+    ; call mul as function because mul is kinda instruction-heavy
+    ; r0 is op1 r1 op2
+    l.iter1: ; multiplier is in r1
+        jz r0 l.end
+        jz r1 l.to_iter2
+        dec r1
+        inc s1
+        inc s0
+        jmp l.iter1
+    l.to_iter1:
+        dec r0
+        jmp l.iter1
+    l.to_iter2:
+        dec r0
+    l.iter2: ; multiplier is in s0
+        jz r0 l.end
+        jz s0 l.to_iter1
+        dec s0
+        inc s1
+        inc r1
+        jmp l.iter2
+    l.end:
+        movz r1
+        movz s0
+        mov r0 s1
         ret

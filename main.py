@@ -106,7 +106,7 @@ def load_file(filename):
             print(line, ": The prefix '0L' is reserved")
             exit(1)
 
-        instr = line.replace("jz", "jiz").replace("jnz", "jinz").split()
+        instr = line.split()
         if instr and instr != [] and instr != [""]:
             code.append(instr)
     return code
@@ -295,7 +295,7 @@ def compile():
         elif code[i][0].lower() == "push":
             max_label = -1
             if not args.no_stdlib:
-                extra = "\njinz h0 STD.stack_overflown"
+                extra = "\njnz h0 STD.stack_overflown"
             else:
                 extra = ""
             asm = """\
@@ -378,15 +378,15 @@ dec s7
             asm = """\
 movz s5
 {label0}:
-jiz {op1} {label2}
-jiz {op0} {label1}
+jz {op1} {label2}
+jz {op0} {label1}
 dec {op0}
 dec {op1}
 jmp {label0}
 {label1}:
 inc s5
 {label2}:
-jiz {op1} {label3}
+jz {op1} {label3}
 inc {op0}
 dec {op1}
 jmp {label2}
@@ -402,19 +402,19 @@ jmp {label2}
 movz s0
 movz {dest}
 {label0}:
-jiz {op0} {label4}
+jz {op0} {label4}
 dec {op0}
 {label1}:
-jiz {op1} {label2}
+jz {op1} {label2}
 dec {op1}
 inc s0
 inc {dest}
 jmp {label1}
 {label2}:
-jiz {op0} {label4}
+jz {op0} {label4}
 dec {op0}
 {label3}:
-jiz s0 {label0}
+jz s0 {label0}
 dec s0
 inc {op1}
 inc {dest}
@@ -429,14 +429,14 @@ movz {op1}
         elif code[i][0].lower() == "div" and code[i][2][0] != "#":
             max_label = 6
             asm = """\
-jiz {op1} {label5}
+jz {op1} {label5}
 movz s2
 {label0}:
-jiz {op0} {label4}
+jz {op0} {label4}
 cpy s1 {op1}
 {label1}:
-jiz s1 {label2}
-jiz {op0} {label3}
+jz s1 {label2}
+jz {op0} {label3}
 dec {op0}
 dec s1
 jmp {label1}
@@ -478,7 +478,7 @@ mov {value},{dst} {reg}
                 exit(1)
 
         ###
-        elif code[i][0].lower() == "jiz" and code[i][2][0] != "#":
+        elif code[i][0].lower() == "jz" and code[i][2][0] != "#":
             max_label = 0
             asm = """\
 tst {value}
@@ -489,7 +489,7 @@ jmp {to}
             form = {"value": code[i][1], "to":code[i][2]}
 
         ###
-        elif code[i][0].lower() == "jinz" and code[i][2][0] != "#":
+        elif code[i][0].lower() == "jnz" and code[i][2][0] != "#":
             max_label = -1
             asm = """\
 tst {value}
@@ -506,11 +506,11 @@ jmp {label1}
 dec {op0}
 dec {op1}
 {label1}:
-jiz {op0} {label2}
-jiz {op1} {label3}
+jz {op0} {label2}
+jz {op1} {label3}
 jmp {label0}
 {label2}:
-jiz {op1} {label4}
+jz {op1} {label4}
 mov s4 #2
 jmp {label5}
 {label3}:
@@ -532,7 +532,7 @@ movz {op1}
                 code[i].append("io6")
             max_label = 0
             form = {"code":code[i][1], "reg":code[i][2]}
-            asm = "mov {reg} #{code}\n{label0}:\njinz {reg} {label0}\n"
+            asm = "mov {reg} #{code}\n{label0}:\njnz {reg} {label0}\n"
 
         ###
         elif code[i][0].lower() == "case" and code[i][2][0] != "#":
@@ -544,7 +544,7 @@ movz {op1}
             for lbl in code[i][2].split(","):
                 found = True
                 asm += """
-jiz {r} lbl
+jz {r} lbl
 dec {r}
 """.replace("lbl", lbl)
 

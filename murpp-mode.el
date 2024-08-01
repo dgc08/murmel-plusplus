@@ -24,7 +24,7 @@
      . font-lock-keyword-face)
 
     ;; Data movement keywords
-    ("\\<\\(mov\\|cpy\\|jiz\\|jinz\\|jz\\|jnz\\|add\\|sub\\|mul\\|div\\|cpy\\|movz\\|cmp\\)\\>"
+    ("\\<\\(mov\\|cpy\\|jz\\|jnz\\|add\\|sub\\|mul\\|div\\|cpy\\|movz\\|cmp\\)\\>"
      . font-lock-keyword-face)
 
     ;; Macro and control keywords
