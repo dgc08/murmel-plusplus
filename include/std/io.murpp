@@ -34,23 +34,24 @@ puts:
         ret
 
 scope
-l.offset:
+l.num_offset:
     #"0"
+l.num_base:
+    10
+
 l.len:
     0
-l.base:
-    10
 printnum:
     ; r0 = int to print
     movz 4,6 ; make syscall ready
     l.start:
-        cpy r1 l.base
+        cpy r1 l.num_base
         call math.div
         push r1 ;remainder
         inc l.len
         jnz r0 l.start
     l.print:
-        cpy r1 l.offset
+        cpy r1 l.num_offset
         pop 5 ; pop char onto 5
         add 5 r1
         syscall

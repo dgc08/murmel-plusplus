@@ -5,8 +5,8 @@ _start: ;; if compiled with stdlib just comment that out
     call main
     hlt *r0
 
-include std.string
 include std.io
+include std.string
 
 $msg1:
     #"Hello, world!"
@@ -14,6 +14,10 @@ $msg2:
     #"Hello, computer!"
 $msg3:
     #"Len of msg2: \""
+$msg4:
+    #"Trying atoi on: \""
+$test_atoi:
+    #"6942"
 $closing:
     #"\"\n"
 
@@ -23,30 +27,25 @@ main:
     call puts
     cpy r0 $msg2
     call puts
-    mov r0 $closing
+    cpy r0 $closing
     call puts
     cpy r0 $msg2
     call strlen
     call printnum
     putmacro putchar STD.endl
-    ; cpy r0 e3
-    ; cpy r1 $msg_for_heap
-    ; call strcpy
-    ; ;call printnum
-    ; mov h_str e3
-    ; mov e3 r0
-    ; putmacro println h_str
-    ; call stackoverflow
+
+    mov r0 $msg4
+    call puts
+    cpy r0 $test_atoi
+    call puts
+    cpy r0 $closing
+    call puts
+
+
+    cpy r0 $test_atoi
+    call atoi
+    call printnum
+    putmacro putchar STD.endl
+
     movz r0
-    ret
-
-world:
-    cpy r0 $msg1
-    call putln ; just puts + print newline
-    call computer
-    ret
-
-computer:
-    cpy r0 $msg2
-    call putln
     ret

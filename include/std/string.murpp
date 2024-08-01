@@ -28,3 +28,37 @@ strlen:
     l.finish:
         movz r1
         ret
+
+scope
+l.num_base:
+    10
+l.num_offset:
+    #"0"
+$l.iter:
+    #"iter"
+l.stp:
+    0
+l.accu:
+    0
+atoi:
+    mov l.stp r0
+    l.start:
+        jz *l.stp l.end
+
+        ; shift accu by 10
+        mov r0 l.accu
+        cpy r1 l.num_base
+        call math.mul
+        mov l.accu r0
+
+        ; get new digit
+        cpy s1 *l.stp
+        cpy s2 l.num_offset
+        sub s1 s2
+
+        add l.accu s1
+        inc l.stp
+        jmp l.start
+    l.end:
+        mov r0 l.accu     ; Return accu
+        ret
