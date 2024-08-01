@@ -12,15 +12,27 @@ $msg1:
     #"Hello, world!"
 $msg2:
     #"Hello, computer!"
+$msg3:
+    #"Len of msg2: \""
+$closing:
+    #"\"\n"
 
-h_str:
-    0
 main:
-    call world
+    ;call world
+    mov r0 $msg3
+    call puts
+    cpy r0 $msg2
+    call puts
+    mov r0 $closing
+    call puts
+    cpy r0 $msg2
+    call strlen
+    call printnum
+    putmacro putchar STD.endl
     ; cpy r0 e3
     ; cpy r1 $msg_for_heap
     ; call strcpy
-    ; ;call print_int
+    ; ;call printnum
     ; mov h_str e3
     ; mov e3 r0
     ; putmacro println h_str

@@ -3,15 +3,28 @@
 scope
 strcpy:
     ; r0: destination address
-    ; r3: string to copy
+    ; r1: string to copy
     mov r2 r0
     mov r3 r1
     l.start:
         cpy *r2 *r3
         jz *r3 l.finish
+        inc r1
         inc r2
         inc r3
         jmp l.start
     l.finish:
         mov r0 r3
+        ret
+
+scope
+strlen:
+    mov r1 r0
+    l.start:
+        jz *r1 l.finish
+        inc r0
+        inc r1
+        jmp l.start
+    l.finish:
+        movz r1
         ret

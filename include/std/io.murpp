@@ -1,11 +1,13 @@
 ;!MURBIN
-; std.io
+;std.io
+
+include std.math
+
 $STD.endl: ; endl "\n"
     10
     0
 
 defmacro putchar char:
-    movz 4
     cpy 5 char
     syscall
 macro_end
@@ -30,3 +32,28 @@ puts:
         jmp l.start
     l.finish:
         ret
+
+scope
+l.offset:
+    #"0"
+l.len:
+    0
+l.base:
+    10
+printnum:
+    ; r0 = int to print
+    movz 4,6 ; make syscall ready
+    l.start:
+        cpy r1 l.base
+        call math.div
+        push r1 ;remainder
+        inc l.len
+        jnz r0 l.start
+    l.print:
+        cpy r1 l.offset
+        pop 5 ; pop char onto 5
+        add 5 r1
+        syscall
+        dec l.len
+        jnz l.len l.print
+    ret
