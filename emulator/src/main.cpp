@@ -38,6 +38,24 @@ std::chrono::steady_clock::time_point lastExecutionTime = std::chrono::steady_cl
 int instr_count = 0;
 bool newline_needed = false;
 
+const char * HELP = R"V0G0N(
+             Interactive Interpreter for Murmel Assembly
+                           By Sinthoras39
+
+Commands:
+         help
+         load-ins               Load an assmebly file
+         load-mem               Load a memory file
+         load-mem               Load a memory file
+         run (r)                Run the assembly
+         stop (h)               Halt the execution
+         inspect (i)            Print the memory
+         list                   Print the loaded assembly
+
+         [memoryAddress]        Print the value of [memoryAdress]
+         [memoryAddress] [val]  Set the  value of [memoryAdress] to [val]
+         (v) or (s) [address]   Set the viewport to start at [address]
+)V0G0N";
 
 inline bool is_int(const std::string& str) {
     try {
@@ -333,6 +351,9 @@ void executeCommand(const std::vector<std::string>& tokens) {
     }
     else if (tokens[0] == "clear" ||tokens[0] == "memclear" ) {
         mem.clear();
+    }
+    else if (tokens[0] == "help") {
+        std::cout << HELP << std::endl;
     }
     else if (tokens[0] == "i" ||tokens[0] == "inspect" ) {
         size_t max = 0;

@@ -1,6 +1,7 @@
 ;!MURBIN
 
 _start: ;; if compiled with stdlib just comment that out
+    dec 4
     mov e3 4
     cpy e1 e3
     call main
@@ -29,43 +30,45 @@ main:
     mov r0 $msg1
     call puts
 
+    inc e3
     cpy num_1 e3
     mov r0 e3
     call getline
-    inc r0
-    mov e3 r0
 
     mov r0 num_1
     call atoi
     mov num_1 r0
+    dec e3
 
     ; Num 2
     mov r0 $msg2
     call puts
 
+    inc e3
     cpy num_2 e3
     mov r0 e3
     call getline
-    inc r0
     mov e3 r0
 
     mov r0 num_2
     call atoi
     mov num_2 r0
+    dec e3
 
     ; Op
     mov r0 $msg3
     call puts
 
+    inc r0
     cpy op e3
     mov r0 e3
     call getline
-    inc r0
     mov e3 r0
 
     mov r0 op
     call atoi
     mov op r0
+    dec e3
     dec op ; make it start at 0
 
     mov r0 num_1
