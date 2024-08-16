@@ -36,10 +36,10 @@ hlt
 This project started with writing a kind of compiler for a superset of this assembler. The 'assembler language' is called 'murpp' (better name needed ;) )
 
 It contains a bunch of different programs:
-- The compiler for murpp assembly. It can compile to Bonsai assembly and assemble for the Murbin VM. See more under [the MURPP language](#The MURPP language) and [using the compiler](#Using the compiler)
-- [An interpreter for Bonsai assembly](#The Bonsai Emulator), made because Felix Selter's interpreter (or rather my fork of it) running in the browser and written in JavaScript was too slow
-- [The Murbin Virtual Machine](#Using the virtual machine (binary-emulator))
-- [The standard library, which can be used in MURPP programs compiled for the Murbin VM](#The standard library)
+- The compiler for murpp assembly. It can compile to Bonsai assembly and assemble for the Murbin VM. See more under [the MURPP language](#the-murpp-language) and [using the compiler](#using-the-compiler)
+- [An interpreter for Bonsai assembly](#the-bonsai-emulator), made because Felix Selter's interpreter (or rather my fork of it) running in the browser and written in JavaScript was too slow
+- [The Murbin Virtual Machine](#the-murbin-vm-also-called-murbin-standard)
+- [The standard library](#the-standard-library), which can be used in MURPP programs compiled for the Murbin VM
 
 ## The MURPP language
 ### Using the compiler
