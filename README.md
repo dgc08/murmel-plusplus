@@ -33,18 +33,32 @@ hlt
 ```
 
 ## About this project
-This project started with writing a kind of compiler for a superset of this assembler. The 'assembler language' is called 'murpp' (better name needed ;) )
+This project started with writing a kind of compiler for a superset of this assembler. The 'assembler language' is called 'MURPP' (better name needed ;) )
 
 It contains a bunch of different programs:
-- The compiler for murpp assembly. It can compile to Bonsai assembly and assemble for the Murbin VM. See more under [the MURPP language](#the-murpp-language) and [using the compiler](#using-the-compiler)
+- The compiler for MURPP assembly. It can compile to Bonsai assembly and assemble for the Murbin VM. See more under [the MURPP language](#the-murpp-language) and [using the compiler](#using-the-compiler)
 - [An interpreter for Bonsai assembly](#the-bonsai-emulator), made because Felix Selter's interpreter (or rather my fork of it) running in the browser and written in JavaScript was too slow
 - [The Murbin Virtual Machine](#the-murbin-vm-also-called-murbin-standard)
-- [The standard library](#the-standard-library), which can be used in MURPP programs compiled for the Murbin VM
+- [The Murbin standard library](#the-standard-library), which can be used in MURPP programs compiled for the Murbin VM
 
 ## The MURPP language
-### Using the compiler
+MURPP is a superset of the Bonsai assembly (see in the [Introduction](#introduction)). It aims to abstract some simple things, so you can write in a assembly-like language, don't have to calculate offset in your head and use more than 4 instructions.
+
+It's key features are:
+- Labels to make jumps easier and denote data locations in Murbin
+- Higher-level instructions like `mov` or `add`, which get replaced with their Bonsai implementations during compilation
+- Utilization of certain addresses as registers (for example `r0`)
+- Macros, which behave like C-style `#define` function macros, but with multiple lines
+
+If you compile for Murbin, you have additional features like functions with a callstack. These are not possible if you have an interpreter for Bonsai Assembly [like this one](https://github.com/dgc08/MurmelRechner) because memory and executable code are seperated. More about that under [Special features for Murbin](#special-features-for-murbin)
+
+### Features of the language
+#### Instructions
+#### Labels, Registers and Addresses
+#### Macros
 ### Special features for Murbin
 #### The standard library
+### Using the compiler
 ## The Bonsai Emulator
 ## The Murbin VM (Also called Murbin standard)
 ### The executable format
