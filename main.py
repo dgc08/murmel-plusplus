@@ -217,7 +217,7 @@ def compile():
             code[i:i+1] = code_repl
             continue
 
-        ###
+        ### View instruction implementations down here
         elif code[i][0].lower() == "mov" and code[i][2][0] == "#":
             max_label = -1
             asm = "{movzs}\n{incs}"
@@ -380,18 +380,18 @@ dec s7
             asm = """\
 movz s5
 {label0}:
-jz {op1} {label2}
-jz {op0} {label1}
-dec {op0}
-dec {op1}
-jmp {label0}
+    jz {op1} {label2}
+    jz {op0} {label1}
+    dec {op0}
+    dec {op1}
+    jmp {label0}
 {label1}:
-inc s5
+    inc s5
 {label2}:
-jz {op1} {label3}
-inc {op0}
-dec {op1}
-jmp {label2}
+    jz {op1} {label3}
+    inc {op0}
+    dec {op1}
+    jmp {label2}
 {label3}:
 """
             form = {"op0": code[i][1], "op1":code[i][2]}
@@ -404,25 +404,25 @@ jmp {label2}
 movz s0
 movz {dest}
 {label0}:
-jz {op0} {label4}
-dec {op0}
+    jz {op0} {label4}
+    dec {op0}
 {label1}:
-jz {op1} {label2}
-dec {op1}
-inc s0
-inc {dest}
-jmp {label1}
+    jz {op1} {label2}
+    dec {op1}
+    inc s0
+    inc {dest}
+    jmp {label1}
 {label2}:
-jz {op0} {label4}
-dec {op0}
+    jz {op0} {label4}
+    dec {op0}
 {label3}:
-jz s0 {label0}
-dec s0
-inc {op1}
-inc {dest}
-jmp {label3}
+    jz s0 {label0}
+    dec s0
+    inc {op1}
+    inc {dest}
+    jmp {label3}
 {label4}:
-movz {op1}
+    movz {op1}
 """
             form = {"dest":code[i][1], "op0": code[i][2], "op1":code[i][3]}
 
@@ -431,31 +431,31 @@ movz {op1}
         elif code[i][0].lower() == "div" and len(code[i]) > 1 and code[i][2][0] != "#":
             max_label = 6
             asm = """\
-jz {op1} {label5}
-movz s2
+    jz {op1} {label5}
+    movz s2
 {label0}:
-jz {op0} {label4}
-cpy s1 {op1}
+    jz {op0} {label4}
+    cpy s1 {op1}
 {label1}:
-jz s1 {label2}
-jz {op0} {label3}
-dec {op0}
-dec s1
-jmp {label1}
+    jz s1 {label2}
+    jz {op0} {label3}
+    dec {op0}
+    dec s1
+    jmp {label1}
 {label2}:
-inc s2
-jmp {label0}
+    inc s2
+    jmp {label0}
 {label3}:
-sub {op1} s1
-mov s5 {op1}
-jmp {label6}
+    sub {op1} s1
+    mov s5 {op1}
+    jmp {label6}
 {label4}:
-movz {op1}
-jmp {label6}
+    movz {op1}
+    jmp {label6}
 {label5}:
-hlt 3
+    hlt 3
 {label6}:
-mov {dest} s2
+    mov {dest} s2
 """
             form = {"dest":code[i][1], "op0": code[i][2], "op1":code[i][3]}
 
@@ -470,14 +470,6 @@ mov {value},{dst} {reg}
 """
             form = {"value": code[i][2], "dst":code[i][1], "reg":code[i][3]}
 
-            found = False
-            for dest in code[i][1].split(","):
-                found = True
-                form["incs"] = form.get("incs", "") + f"inc {dest}\n"
-
-            if not found:
-                print("Wrong number of argumentss:", " ".join(code[i]))
-                exit(1)
 
         ###
         elif code[i][0].lower() == "jz" and code[i][2][0] != "#":
@@ -505,24 +497,24 @@ jmp {to}
             asm = """\
 jmp {label1}
 {label0}:
-dec {op0}
-dec {op1}
+    dec {op0}
+    dec {op1}
 {label1}:
-jz {op0} {label2}
-jz {op1} {label3}
-jmp {label0}
+    jz {op0} {label2}
+    jz {op1} {label3}
+    jmp {label0}
 {label2}:
-jz {op1} {label4}
-mov s4 #2
-jmp {label5}
+    jz {op1} {label4}
+    mov s4 #2
+    jmp {label5}
 {label3}:
-mov s4 #1
-jmp {label5}
+    mov s4 #1
+    jmp {label5}
 {label4}:
-mov s4 #0
+    mov s4 #0
 {label5}:
-movz {op0}
-movz {op1}
+    movz {op0}
+    movz {op1}
 """
             form = {"op0": code[i][1], "op1":code[i][2]}
 
