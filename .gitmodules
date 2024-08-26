@@ -1,0 +1,3 @@
+[submodule "murc"]
+	path = murc
+	url = https://github.com/dgc08/murc.git
