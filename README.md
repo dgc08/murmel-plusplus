@@ -58,9 +58,9 @@ Sometimes, arguments are optional, which will be marked by `()` around the argum
 
 You can look up the implentation of each instruction in Bonsai assembly in the source code, however some instructions, especially the ones taking lists as arguments, have more dynamically gernerated assembly. The implmentations of the instructions are marked by the comment `### View instruction implementations down here`
 
-It is important to note that all instructions except `cpy` clear the source register (for example `mov` clears the source, `mul` cleasr the multiplicand etc.)
+It is important to note that all instructions except `cpy` clear the source register (for example `mov` clears the source, `mul` clears the multiplicand etc.)
 
-As MURPP is a superset of Bonsai assembly, the four/five basic Bonsai assembly instructions still work. `jmp` is still as important, `inc` and `dec` are still used sometimes.
+As MURPP is a superset of Bonsai assembly, the four/five basic Bonsai assembly instructions will still work. `jmp` is still as important, `inc` and `dec` are still used sometimes.
 `tst` however is often unclear, so you should always use `jz` and `jnz`.
 
 #### 'mov'
@@ -100,6 +100,8 @@ Equivalent to `mov [addresses] #0`
 
 `jz` and `jnz` is the primary way to abstract the confusing `tst`-instruction.
 
+`jz` takes a condition and a location (which is usually a label) and jumps to the location if the value at the provided address is zero. If not, the next instruction will be executed normally. `jnz` works the same way only the other way around, it only jumps if the condition is not zero. 
+
 #### 'add'
 `add [summand1/destinations] summand2`
 
@@ -118,13 +120,13 @@ For example, if `r0` is 3 and `r1` is 5, `r0` would end up being 3 and `s5` will
 
 #### 'mul' and 'div'
 
-> NOTE: When using murbin, consider using the math.mul and math.div functions from std.math, as they are both really instruction heavy and a lot of time is saved by calling them as a function. Additionally, the implementation for `div` in std.math is about ~2x faster than the implementation of the `div` instruction, as it doesn't need to be compact.
+> NOTE: When using murbin, consider using the math.mul and math.div functions from std.math, as they are both really instruction heavy and a lot of space is saved by calling them as a function. Additionally, the implementation for `div` in std.math is about ~2x faster than the implementation of the `div` instruction, as it doesn't need to be compact.
 
 `mul/div destination arg1 arg2`
 
 The remainder of the division is stored in the `s5` register.
 
-> Attention: The output register can't be one of the arguments! There will be no warning if you reuse an argument as destination, your code will just not work.
+> ATTENTION: The output register can't be one of the arguments! There will be no warning if you reuse an argument as destination, your code will just not work.
 
 Example:
 
@@ -144,15 +146,17 @@ Copies the value in `source` to the provided destination addresses.
 The usage is identical to the usage of `mov`
 
 #### 'push' and 'pop'
-Although the stack is available for Bonsai assembly mode, it is recommeded to only use it on the Murbin VM. 
+Although the stack is available for Bonsai assembly/Murmel computer mode, it is recommeded to only use it on the Murbin VM. 
 
 Stack operations use pointers in the sense of `inc *s7`, which effectively no Bonsai assembler interpreter does, as it isn't even really a part of the assembly.
+
+I have written a paragraph on the use of pointers in Bonsai [here](https://github.com/dgc08/MurmelRechner?tab=readme-ov-file#pointers), which I can recommend right here.
 
 Keep in mind that if you are not writing code for Murbin, the stack pointer is set to point to r8, which means you can only go to r7 in that case. On Murbin, the stack pointer gets set after the compilation process. More about that in [TODO].
 
 `push source`
 
-Increments the stack pointer and moves the value onto the stack. If the standard library is not used, a stack overflow check is performed.
+Increments the stack pointer and moves the value onto the stack. If the standard library is included via a special compiler flag, a stack overflow check is performed.
 
 `pop destination`
 
@@ -200,12 +204,23 @@ A kind of decoder. If the address's value matches the index of one of the labels
 Look to the documentation of `cmp` for an example.
 
 ### Labels, Registers and Addresses
+[TODO]
 ### Macros, includes and scopes
+[TODO]
 ### Special features for Murbin
+[TODO]
 #### The standard library
+[TODO]
 ### Using the compiler
+[TODO]
 ## The Bonsai Emulator
+[TODO]
 ## The Murbin VM (Also called Murbin standard)
+[TODO]
 ### The executable format
+[TODO]
 ### The VM specification
+[TODO]
 ### Using the virtual machine (binary-emulator)
+[TODO]
+
